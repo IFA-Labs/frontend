@@ -15,7 +15,7 @@ if (!projectId) {
 const metadata = {
   name: 'Ifa Labs',
   description: 'Ifa Labs DEX',
-  url: 'http://localhost:3000',
+  url: 'https://www.ifalabs.com/',
   icons: ['https://avatars.githubusercontent.com/u/179229932'],
 };
 

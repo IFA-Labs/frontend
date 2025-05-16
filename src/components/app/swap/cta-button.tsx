@@ -51,7 +51,6 @@ export function SwapCTAButton({
     }
   };
 
-
   const baseButtonStyle: CSSProperties = {
     width: '100%',
     padding: '12px 20px',
@@ -73,16 +72,17 @@ export function SwapCTAButton({
 
   const enabledButtonStyle: CSSProperties = {
     ...baseButtonStyle,
-    backgroundColor: '#E6DAFE', 
+    backgroundColor: '#E6DAFE',
     color: '#151515',
     fontWeight: '500',
   };
 
   const errorButtonStyle: CSSProperties = {
     ...baseButtonStyle,
-    backgroundColor: '#E20613',
+    backgroundColor: '#A9484D',
     color: 'white',
     cursor: 'not-allowed',
+    fontWeight: '500',
   };
 
   // Avoid rendering wallet-dependent UI until component is mounted (for SSR/hydration)
