@@ -1,0 +1,41 @@
+.blog-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+  margin-top: 200px;
+  margin-bottom: 200px;
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .title {
+      font-family: 'BIZ UDMincho', serif;
+      font-style: normal;
+      font-weight: 400;
+      font-size: 64px;
+      line-height: auto;
+      letter-spacing: -2.8px;
+      color: #ffffff;
+      overflow: hidden;
+    }
+
+    .desc {
+      margin-top: .5rem;
+      max-width: 460px;
+      color: #b3b3b3;
+      text-align: center;
+    }
+  }
+
+  .blog-cards {
+    margin-top: 100px;
+    display: flex;
+    gap: 2rem;
+    // flex-wrap: wrap;
+  }
+}

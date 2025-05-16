@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=BIZ+UDMincho&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Red+Hat+Mono:ital,wght@0,300..700;1,300..700&family=Red+Hat+Text:ital,wght@0,300..700;1,300..700&display=swap');
+
+@import 'tailwindcss';
+@import './_variable';
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+html {
+  scroll-behavior: smooth;
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion) {
+  html {
+    scroll-behavior: none;
+  }
+}
+
+html *,
+html *::after,
+html *::before {
+  box-sizing: inherit;
+}
+body {
+  background: #020101;
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+}
+
+input {
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  border: none;
+}
+button {
+  cursor: pointer;
+}

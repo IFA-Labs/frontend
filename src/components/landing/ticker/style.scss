@@ -1,0 +1,86 @@
+.ticker-wrapper {
+  width: 100%;
+  overflow: hidden;
+  background: #020101;
+  border-width: 1px 0px;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.ticker {
+  display: flex;
+  width: fit-content;
+  animation: scroll 25s linear infinite;
+
+  .ticker-item {
+    min-width: 320px;
+    width: 100%;
+    background-color: #020101;
+    color: #e0dfff;
+    text-align: center;
+    margin-right: 1px;
+    display: flex;
+    justify-content: center;
+    gap: 64px;
+    padding: 1rem 24px;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+
+    .coin-name {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: max-content;
+
+      .symbol {
+        font-family: 'Red Hat Text', sans-serif;
+        font-family: 14px;
+        font-weight: 400;
+        color: #e6dafe;
+      }
+
+      label {
+        font-family: 'Red Hat Text', sans-serif;
+        color: rgba(230, 218, 254, 0.64);
+        font-size: 13;
+        font-weight: 400;
+      }
+    }
+
+    .price-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+
+      .price {
+        font-family: 'Red Hat Text', sans-serif;
+        color: #e6dafe;
+        font-size: 14px;
+        font-weight: 400;
+        margin-bottom: 0.2rem;
+      }
+
+      .change {
+        font-family: 'Red Hat Text', sans-serif;
+        color: #00ff99;
+        font-size: 0.875rem;
+      }
+    }
+  }
+
+  .up-arrow {
+    margin-right: 0.25rem;
+  }
+}
+
+.ticker:hover {
+  animation-play-state: paused;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

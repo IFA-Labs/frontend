@@ -1,0 +1,74 @@
+.connect-wallet {
+
+  &-button {
+    padding: 8px 0px;
+    border: 0;
+    cursor: pointer;
+    font-size: 1rem;
+    margin: 5px;
+    text-align: center;
+    outline: none;
+    border-radius: 64px;
+    color: #151515;
+    background: #fff;
+    font-weight: 500;
+
+    &--loading {
+      color: #151515;
+      cursor: default;
+    }
+  }
+
+  &-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 8px;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: normal;
+  }
+
+  &-network {
+    &-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+    }
+
+    &-text {
+      font-weight: 500;
+    }
+  }
+
+  &-address {
+    color: #555;
+  }
+
+  &-balance {
+    color: #333;
+  }
+
+  &-error {
+    color: red;
+    font-size: 0.8rem;
+    margin-top: 5px;
+  }
+}
+
+.connect-wallet-button {
+  width: 100%;
+  height: 49px;
+  background: #fff;
+  border-radius: 64px;
+  color: #151515;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: normal;
+  cursor: pointer;
+  gap: 0.5rem;
+}
