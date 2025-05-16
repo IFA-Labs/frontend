@@ -2,10 +2,10 @@
 
 import { parseUnits, formatUnits } from 'viem';
 import {
-  useContractRead,
-  useContractWrite,
-  usePrepareContractWrite,
-  useWaitForTransaction,
+  useAccount,
+  useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
 } from 'wagmi';
 import { useState, useEffect } from 'react';
 
@@ -35,14 +35,14 @@ export interface SwapExecutionProps {
   recipient: `0x${string}`; // User address
 }
 
-export interface ApprovalResult {
+interface ApprovalResult {
   isApproved: boolean;
   isApproving: boolean;
   error: Error | null;
   approve: () => void;
 }
 
-export interface SwapResult {
+interface SwapResult {
   isLoading: boolean;
   isPending: boolean;
   isSuccess: boolean;
@@ -71,37 +71,38 @@ export function useTokenApproval(
   const amountInWei = enabled ? parseUnits(amount, decimals) : BigInt(0);
 
   // Check allowance
-  const { data: allowance } = useContractRead({
+  const { data: allowance } = useReadContract({
     address: tokenAddress as `0x${string}`,
     abi: ERC20ABI,
     functionName: 'allowance',
     args: [spenderAddress as `0x${string}`, ROUTER_ADDRESS as `0x${string}`],
-    enabled,
-    watch: true,
+    query: {
+      enabled,
+      refetchInterval: 10000,
+    },
   });
 
-  // Prepare approval transaction
-  const { config: approvalConfig, error: prepareError } =
-    usePrepareContractWrite({
+  // Execute approval transaction
+  const {
+    data: approveResult,
+    writeContract,
+    isPending: isApproving,
+    error: writeError,
+  } = useWriteContract();
+
+  const { isSuccess: isApprovalSuccess } = useWaitForTransactionReceipt({
+    hash: approveResult,
+  });
+
+  const approve = () => {
+    if (!tokenAddress || !spenderAddress || !enabled) return;
+    writeContract({
       address: tokenAddress as `0x${string}`,
       abi: ERC20ABI,
       functionName: 'approve',
       args: [ROUTER_ADDRESS as `0x${string}`, amountInWei],
-      enabled: enabled && !!allowance && amountInWei > (allowance as bigint),
     });
-
-  // Execute approval transaction
-  const {
-    write: approve,
-    data: approvalData,
-    isLoading: isApproving,
-    error: approvalError,
-  } = useContractWrite(approvalConfig);
-
-  // Wait for transaction confirmation
-  const { isSuccess: isApprovalSuccess } = useWaitForTransaction({
-    hash: approvalData?.hash,
-  });
+  };
 
   // Determine if token is approved
   const isApproved =
@@ -112,8 +113,8 @@ export function useTokenApproval(
   return {
     isApproved,
     isApproving,
-    error: approvalError || prepareError,
-    approve: () => approve?.(),
+    error: writeError,
+    approve,
   };
 }
 
@@ -151,13 +152,15 @@ export function useSwapExecution({
   ];
 
   // Get expected output amount
-  const { data: amountsOut, isSuccess: isAmountsOutSuccess } = useContractRead({
+  const { data: amountsOut, isSuccess: isAmountsOutSuccess } = useReadContract({
     address: ROUTER_ADDRESS as `0x${string}`,
     abi: IfaSwapRouterABI,
     functionName: 'getAmountsOut',
     args: [amountInWei, path],
-    enabled,
-    watch: true,
+    query: {
+      enabled,
+      refetchInterval: 10000,
+    },
   });
 
   // Calculate minimum amount out based on slippage
@@ -181,43 +184,38 @@ export function useSwapExecution({
     }
   }, [amountsOut, isAmountsOutSuccess, slippageTolerance]);
 
-  // Prepare swap transaction
-  const { config: swapConfig, error: prepareSwapError } =
-    usePrepareContractWrite({
+  // Execute swap transaction
+  const {
+    data: swapResult,
+    writeContract,
+    isPending,
+    error: swapError,
+  } = useWriteContract();
+
+  const { isSuccess } = useWaitForTransactionReceipt({
+    hash: swapResult,
+  });
+
+  const execute = () => {
+    if (!isReady || !enabled) return;
+    writeContract({
       address: ROUTER_ADDRESS as `0x${string}`,
       abi: IfaSwapRouterABI,
       functionName: 'swapExactTokensForTokens',
       args: [amountInWei, minAmountOut, path, recipient, BigInt(deadline)],
-      enabled: isReady && enabled,
     });
-
-  // Execute swap transaction
-  const {
-    write: executeSwap,
-    data: swapData,
-    isLoading,
-    error: swapError,
-    isPending,
-  } = useContractWrite(swapConfig);
-
-  // Wait for transaction confirmation
-  const { isSuccess } = useWaitForTransaction({
-    hash: swapData?.hash,
-  });
+  };
 
   return {
-    isLoading,
+    isLoading: isPending,
     isPending,
     isSuccess,
-    error: swapError || prepareSwapError,
-    data: swapData,
-    execute: () => executeSwap?.(),
+    error: swapError,
+    data: swapResult,
+    execute,
   };
 }
 
-/**
- * Helper function to get current Unix timestamp plus minutes
- */
-export function getDeadlineTimestamp(minutesFromNow: number = 20): number {
-  return Math.floor(Date.now() / 1000) + minutesFromNow * 60;
+export function getDeadlineTimestamp(minutes: number): number {
+  return Math.floor(Date.now() / 1000) + minutes * 60;
 }
