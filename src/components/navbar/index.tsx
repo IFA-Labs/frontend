@@ -25,7 +25,6 @@ const Navbar: React.FC = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-
   const handleMouseEnter = (
     menuSetter: React.Dispatch<React.SetStateAction<boolean>>,
     timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>,
@@ -37,7 +36,6 @@ const Navbar: React.FC = () => {
     }
     menuSetter(true);
   };
-
 
   const handleMouseLeave = (
     menuSetter: React.Dispatch<React.SetStateAction<boolean>>,
@@ -99,7 +97,7 @@ const Navbar: React.FC = () => {
               }
               className="resources-dropdown"
             >
-              <Link href="/">Developers</Link>
+              <div className="nav-item-text">Developers</div>
               <MenuIcon />
             </li>
             <li
@@ -111,7 +109,7 @@ const Navbar: React.FC = () => {
               }
               className="resources-dropdown"
             >
-              <Link href="/about">Products</Link>
+              <div className="nav-item-text">Products</div>
               <MenuIcon />
             </li>
 
@@ -124,7 +122,7 @@ const Navbar: React.FC = () => {
               }
               className="resources-dropdown"
             >
-              <Link href="">Resources</Link>
+              <div className="nav-item-text">Resources</div>
               <MenuIcon />
             </li>
             <li>
@@ -155,29 +153,31 @@ const Navbar: React.FC = () => {
             handleMouseLeave(setShowDevelopersMenu, developersTimeoutRef)
           }
         >
-          <Link href="">
+          <Link
+            href="https://github.com/IFA-Labs/oracle_contract"
+            target="_blank"
+            className="menu-item"
+          >
             <div className="icon">
               <FaqIcon />
             </div>
-            <Link
-              href="https://github.com/IFA-Labs/oracle_contract"
-              className="link-details"
-            >
+            <div className="link-details">
               <div className="title">Onchain</div>
               <div className="desc">Onchain Documentation</div>
-            </Link>
+            </div>
           </Link>
-          <Link href="">
+          <Link
+            href="http://146.190.186.116:8000/swagger/index.html"
+            target="_blank"
+            className="menu-item"
+          >
             <div className="icon">
               <BlogIcon />
             </div>
-            <Link
-              href="146.190.186.116:8000/swagger/index.html"
-              className="link-details"
-            >
+            <div className="link-details">
               <div className="title">Offchain</div>
               <div className="desc">Offchain Documentation</div>
-            </Link>
+            </div>
           </Link>
         </div>
       )}
@@ -192,7 +192,7 @@ const Navbar: React.FC = () => {
             handleMouseLeave(setShowProductsMenu, productsTimeoutRef)
           }
         >
-          <Link href="">
+          <Link href="/swap">
             <div className="icon">
               <FaqIcon />
             </div>
@@ -201,7 +201,11 @@ const Navbar: React.FC = () => {
               <div className="desc">Swap your stablecoins/tokens</div>
             </div>
           </Link>
-          <Link href="">
+          <Link
+            href="https://www.kombat.xyz/"
+            target="_blank"
+            className="menu-item"
+          >
             <div className="icon">
               <BlogIcon />
             </div>

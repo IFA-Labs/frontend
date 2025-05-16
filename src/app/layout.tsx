@@ -22,7 +22,10 @@ export default async function RootLayout({
     <html lang="en">
       <body>
         <ContextProvider cookies={cookies}>
-          <TokenProvider>{children}</TokenProvider>;
+          <TokenProvider>
+
+              {children}
+          </TokenProvider>
         </ContextProvider>
       </body>
     </html>

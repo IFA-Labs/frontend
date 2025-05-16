@@ -108,7 +108,8 @@
 }
 
 .navbar-container main .nav-links li a,
-.navbar-container main .nav-links li span {
+.navbar-container main .nav-links li span
+.nav-item-text {
   color: #eaeaea;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
@@ -178,6 +179,7 @@
       justify-content: flex-start;
       align-items: flex-start;
       gap: 0;
+      padding: 0.5rem 1rem !important;
       .title {
         color: #eaeaea;
         font-family: 'Red Hat Text', sans-serif;
@@ -206,6 +208,7 @@
 .menu-item {
   border-radius: 8px;
   overflow: hidden;
+  padding: 0.5rem 1rem;
 }
 
 .menu-item:hover {
@@ -213,7 +216,7 @@
 }
 
 .menu-item a {
-  padding: 0;
+  padding: 0.5rem;
   width: 100%;
   text-decoration: none;
 }
@@ -297,5 +300,16 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  align-items: center;
+}
+
+.nav-item-text {
+  color: #eaeaea;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
   align-items: center;
 }

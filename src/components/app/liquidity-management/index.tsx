@@ -9,7 +9,7 @@ import {
 import { parseUnits } from 'viem';
 import { formatEther } from 'ethers';
 
-const routerAddress = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+const routerAddress = '0xcd6ceef9081622e5d59c54b7569e0979494dc207';
 
 const ERC20_ABI = [
   {

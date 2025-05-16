@@ -80,7 +80,7 @@ const SWAP_ABI = [
   },
 ];
 
-const SWAP_ROUTER_ADDRESS = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+const SWAP_ROUTER_ADDRESS = '0xcd6ceef9081622e5d59c54b7569e0979494dc207';
 
 export function useTokenApproval(
   tokenAddress?: string,

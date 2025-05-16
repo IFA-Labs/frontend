@@ -14,7 +14,7 @@ import { IfaSwapRouterABI } from '@/lib/abis/swap-router-abi';
 import { ERC20ABI } from '@/lib/abis/erc20-abi';
 
 // Contract addresses from your deployment
-const ROUTER_ADDRESS = '0x4C340689308af4354704EF753c264bD1946230B8';
+const ROUTER_ADDRESS = '0xcd6ceef9081622e5d59c54b7569e0979494dc207';
 const FACTORY_ADDRESS = '0x045A543FFf5D816fBA83F8af069a13877C5E6a4B';
 
 // Interface for token approval and swap functions

@@ -8,6 +8,31 @@ if (!projectId) {
   throw new Error('Project ID is not defined');
 }
 
+// Define Base Sepolia network configuration
+const baseSepolia = {
+  id: 84532,
+  name: 'Base Sepolia',
+  nativeCurrency: {
+    name: 'Sepolia Ether',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  blockExplorers: {
+    default: {
+      name: 'BaseScan',
+      url: 'https://sepolia.basescan.org',
+    },
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://sepolia.base.org'],
+    },
+    public: {
+      http: ['https://sepolia.base.org'],
+    },
+  },
+};
+
 // Configure networks with proper RPC endpoints
 const networks = [
   {
@@ -32,6 +57,8 @@ const networks = [
       },
     },
   },
+  // Add Base Sepolia testnet
+  baseSepolia,
 ];
 
 //Set up the Wagmi Adapter (Config)

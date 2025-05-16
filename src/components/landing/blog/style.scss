@@ -35,7 +35,7 @@
 
     .view-all {
       display: flex;
-      margin-bottom: .8rem;
+      margin-bottom: 0.8rem;
       a {
         color: #ccc;
         font-size: 0.9rem;
@@ -47,8 +47,8 @@
           text-decoration: underline;
         }
         span {
-          padding: .4rem;
-          background: #FFF;
+          padding: 0.4rem;
+          background: #fff;
           border-radius: 50%;
         }
         svg {
@@ -60,7 +60,8 @@
 
   .blog-cards {
     margin-top: 100px;
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
     gap: 2rem;
   }
 }

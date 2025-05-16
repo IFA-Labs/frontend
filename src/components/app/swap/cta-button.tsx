@@ -1,9 +1,10 @@
-// components/SwapCTAButton.tsx
 'use client';
 
 import { useAccount } from 'wagmi';
 import { useAppKit } from '@reown/appkit/react';
 import { useEffect, useState, CSSProperties } from 'react';
+import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/useToast';
 
 interface SwapCTAButtonProps {
   /** The amount entered by the user for the 'from' token. Empty or '0' means no amount. */
@@ -21,6 +22,9 @@ interface SwapCTAButtonProps {
   onProceed: () => void;
   /** Optional: Custom action for connecting wallet, defaults to opening Reown AppKit modal. */
   onConnectWalletClick?: () => void;
+  /** Optional: Tokens being swapped for notification messages */
+  fromTokenSymbol?: string;
+  toTokenSymbol?: string;
 }
 
 export function SwapCTAButton({
@@ -30,14 +34,78 @@ export function SwapCTAButton({
   isExecutingSwap,
   onProceed,
   onConnectWalletClick,
+  fromTokenSymbol = 'tokens',
+  toTokenSymbol = 'tokens',
 }: SwapCTAButtonProps) {
   const { isConnected } = useAccount();
   const appKit = useAppKit();
   const [mounted, setMounted] = useState(false);
+  const [loadingDots, setLoadingDots] = useState('');
+  const [swapToastId, setSwapToastId] = useState<string | null>(null);
+  const { showToast, updateToast, hideToast } = useToast();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Effect for animated loading dots
+  useEffect(() => {
+    if (isExecutingSwap) {
+      const interval = setInterval(() => {
+        setLoadingDots((prev) => {
+          if (prev.length >= 3) return '';
+          return prev + '.';
+        });
+      }, 400);
+      return () => clearInterval(interval);
+    }
+    return () => setLoadingDots('');
+  }, [isExecutingSwap]);
+
+  // Effect for showing toast notifications during swap execution
+  useEffect(() => {
+    if (isExecutingSwap && !swapToastId) {
+      // Show the initial loading toast when swap starts
+      const id = showToast({
+        type: 'loading',
+        title: 'Processing Transaction',
+        message: `Swapping ${inputAmount} ${fromTokenSymbol} to ${toTokenSymbol}...`,
+        duration: 0, // Don't auto-dismiss for loading states
+      });
+      setSwapToastId(id);
+    } else if (!isExecutingSwap && swapToastId) {
+      // When swap finishes, update the toast with success
+      // In a real implementation, you'd want to check if it was successful or failed
+      updateToast(swapToastId, {
+        type: 'success',
+        title: 'Transaction Complete',
+        message: `Successfully swapped ${inputAmount} ${fromTokenSymbol} to ${toTokenSymbol}`,
+        duration: 5000, // Auto-dismiss after 5 seconds
+        actionLabel: 'View Transaction',
+        onAction: () => {
+          // Here you could open the transaction in a block explorer
+          console.log('View transaction clicked');
+        },
+      });
+
+      // Reset the toast ID after updating
+      setSwapToastId(null);
+    }
+
+    // Clean up toast if component unmounts during transaction
+    return () => {
+      if (swapToastId) {
+        hideToast(swapToastId);
+        setSwapToastId(null);
+      }
+    };
+  }, [
+    isExecutingSwap,
+    swapToastId,
+    inputAmount,
+    fromTokenSymbol,
+    toTokenSymbol,
+  ]);
 
   const handleOpenConnectModal = () => {
     if (onConnectWalletClick) {
@@ -51,6 +119,20 @@ export function SwapCTAButton({
     }
   };
 
+  const handleProceed = () => {
+    // If this is an approval step, show a different toast
+    if (proceedDetails.message === 'Approve') {
+      showToast({
+        type: 'info',
+        title: 'Approval Required',
+        message: `Please approve access to your ${fromTokenSymbol} in your wallet`,
+        duration: 7000,
+      });
+    }
+
+    onProceed();
+  };
+
   const baseButtonStyle: CSSProperties = {
     width: '100%',
     padding: '12px 20px',
@@ -59,7 +141,11 @@ export function SwapCTAButton({
     borderRadius: '64px',
     border: 'none',
     cursor: 'pointer',
-    transition: ' 0.2s ease-in-out',
+    transition: '0.2s ease-in-out',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
   };
 
   const disabledButtonStyle: CSSProperties = {
@@ -85,11 +171,17 @@ export function SwapCTAButton({
     fontWeight: '500',
   };
 
+  const processingButtonStyle: CSSProperties = {
+    ...disabledButtonStyle,
+    backgroundColor: '#E6DAFE80', // Semi-transparent version of the enabled button
+  };
+
   // Avoid rendering wallet-dependent UI until component is mounted (for SSR/hydration)
   if (!mounted) {
     return (
       <button style={disabledButtonStyle} disabled>
-        Loading...
+        <Loader2 className="animate-spin" size={20} />
+        <span>Loading...</span>
       </button>
     );
   }
@@ -108,8 +200,9 @@ export function SwapCTAButton({
   // Bonus State: Swap is currently executing (transaction sent, awaiting confirmation)
   if (isExecutingSwap) {
     return (
-      <button style={disabledButtonStyle} disabled>
-        Processing Swap...
+      <button style={processingButtonStyle} disabled>
+        <Loader2 className="animate-spin" size={20} />
+        <span>Processing Swap{loadingDots}</span>
       </button>
     );
   }
@@ -120,7 +213,8 @@ export function SwapCTAButton({
   if (hasInputAmount && isCheckingDetails) {
     return (
       <button style={disabledButtonStyle} disabled>
-        Loading...
+        <Loader2 className="animate-spin" size={20} />
+        <span>Loading...</span>
       </button>
     );
   }
@@ -142,7 +236,7 @@ export function SwapCTAButton({
   // - An input amount IS present
   if (proceedDetails.canProceed) {
     return (
-      <button style={enabledButtonStyle} onClick={onProceed}>
+      <button style={enabledButtonStyle} onClick={handleProceed}>
         {proceedDetails.message} {/* e.g., "Proceed" */}
       </button>
     );
@@ -156,7 +250,7 @@ export function SwapCTAButton({
             : disabledButtonStyle
         }
         disabled
-        title="insufficient balance"
+        title={proceedDetails.message}
       >
         {proceedDetails.message}
       </button>

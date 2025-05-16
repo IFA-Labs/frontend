@@ -25,7 +25,7 @@
     }
 
     .desc {
-      margin-top: .5rem;
+      margin-top: 0.5rem;
       max-width: 460px;
       color: #b3b3b3;
       text-align: center;
@@ -34,7 +34,8 @@
 
   .blog-cards {
     margin-top: 100px;
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
     gap: 2rem;
     // flex-wrap: wrap;
   }
