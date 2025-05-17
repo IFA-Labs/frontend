@@ -202,7 +202,7 @@ const Navbar: React.FC = () => {
             </div>
           </Link>
           <Link
-            href="https://www.kombat.xyz/"
+            href="https://www.mykombat.xyz/"
             target="_blank"
             className="menu-item"
           >
