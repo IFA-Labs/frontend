@@ -60,7 +60,7 @@ export function SwapCTAButton({
         type: 'loading',
         title: 'Processing Transaction',
         message: `Swapping ${inputAmount} ${fromTokenSymbol} to ${toTokenSymbol}...`,
-        duration: 0, // Don't auto-dismiss for loading states
+        duration: 0,
       });
       setSwapToastId(id);
     } else if (!isExecutingSwap && swapToastId) {

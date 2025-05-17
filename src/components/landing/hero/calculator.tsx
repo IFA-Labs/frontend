@@ -120,7 +120,7 @@ const Calculator = () => {
             <div className="swap-form">
               <label htmlFor="You Pay">From</label>
               <input
-                type="number"
+                type="text"
                 placeholder="0.00"
                 value={amounts.pay}
                 onChange={handlePayAmountChange}
@@ -146,7 +146,7 @@ const Calculator = () => {
             <div className="swap-form">
               <label htmlFor="You Receive">To</label>
               <input
-                type="number"
+                type="text"
                 placeholder="0.00"
                 value={amounts.receive}
                 onChange={handleReceiveAmountChange}
