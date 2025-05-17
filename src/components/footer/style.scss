@@ -17,7 +17,7 @@
 
       h3 {
         max-width: 300px;
-        font-family: 'BIZ UDMincho', serif;
+        font-family: 'BIZ UDMincho';
         font-style: normal;
         font-weight: 400;
         font-size: 24px;
@@ -99,7 +99,7 @@
       display: flex;
       gap: 1.5rem;
       color: hsla(0, 14%, 95%, 0.5);
-      font-family: 'Inter', sans-serif;
+      font-family: var(--font-inter);
       font-size: 14px;
       font-weight: normal;
     }

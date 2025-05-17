@@ -19,42 +19,6 @@ const WhyOracleCard: React.FC<{
 };
 
 const Benefits: React.FC = () => {
-  const cards = [
-    {
-      title: 'Stablecoins Price Feed Real-Time',
-      description:
-        'Provides accurate, up-to-the-second price data for stablecoins, ensuring that DeFi applications and smart contracts have access to consistent and reliable blockchain valuations.',
-      cardClass: 'stablecoins-card',
-      isLarge: false,
-    },
-    {
-      title: 'Automation Services',
-      description:
-        'Offers automated data retrieval, verification, and delivery processes, reducing manual interventions and ensuring that smart contracts always have access to timely and reliable information.',
-      cardClass: 'automation-card',
-      isLarge: true,
-    },
-    {
-      title: 'Offchain and Onchain Data',
-      description:
-        'Aggregates and delivers data from both offchain (external sources like exchanges, financial markets) and onchain (blockchain-verified) sources to ensure broader and more secure data coverage.',
-      cardClass: 'offchain-card',
-      isLarge: false,
-    },
-    {
-      title: 'Multichain Data In',
-      description: '',
-      cardClass: 'multichain-card',
-      isLarge: false,
-    },
-    {
-      title: 'Auditable Price Tracking',
-      description:
-        'Aggregates and delivers data from both offchain (external sources like exchanges, financial markets) and onchain (blockchain-verified) sources to ensure broader and more secure data coverage.',
-      cardClass: 'auditable-card',
-      isLarge: true,
-    },
-  ];
 
   return (
     <section className="why-oracle-section">
@@ -98,7 +62,7 @@ const Benefits: React.FC = () => {
               </p>
             </div>
             <div className="card multichain-card">
-              <h3 className="card-title">Multichain Data In</h3>
+              <h3 className="card-title">Multichain Data Interchange </h3>
             </div>
           </div>
 

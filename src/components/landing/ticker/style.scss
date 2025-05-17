@@ -32,14 +32,14 @@
       width: max-content;
 
       .symbol {
-        font-family: 'Red Hat Text', sans-serif;
+        font-family: var(--font-red-hat-text);
         font-family: 14px;
         font-weight: 400;
         color: #e6dafe;
       }
 
       label {
-        font-family: 'Red Hat Text', sans-serif;
+        font-family: var(--font-red-hat-text);
         color: rgba(230, 218, 254, 0.64);
         font-size: 13;
         font-weight: 400;
@@ -52,7 +52,7 @@
       align-items: flex-start;
 
       .price {
-        font-family: 'Red Hat Text', sans-serif;
+        font-family: var(--font-red-hat-text);
         color: #e6dafe;
         font-size: 14px;
         font-weight: 400;
@@ -60,7 +60,7 @@
       }
 
       .change {
-        font-family: 'Red Hat Text', sans-serif;
+        font-family: var(--font-red-hat-text);
         color: #00ff99;
         font-size: 0.875rem;
       }

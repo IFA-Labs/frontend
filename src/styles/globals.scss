@@ -2,6 +2,20 @@
 
 @import 'tailwindcss';
 @import './_variable';
+
+:root {
+  --font-inter: 'Inter', sans-serif;
+  --font-red-hat-mono: 'Red Hat Mono', monospace;
+  --font-red-hat-text: 'Red Hat Text', sans-serif;
+}
+
+@font-face {
+  font-family: 'BIZ UDMincho';
+  src: url('../../public/fonts/BIZUDPMincho-Regular.ttf') ;
+}
+
+
+
 * {
   margin: 0;
   padding: 0;
@@ -26,15 +40,26 @@ html *::before {
 }
 body {
   background: #020101;
-  color: var(--foreground);
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-inter);
 }
 
 input {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-inter);
   outline: none;
   border: none;
 }
 button {
   cursor: pointer;
+}
+
+.font-red-hat-mono {
+  font-family: var(--font-red-hat-mono);
+}
+
+.font-red-hat-text {
+  font-family: var(--font-red-hat-text);
+}
+
+.font-inter {
+  font-family: var(--font-inter);
 }

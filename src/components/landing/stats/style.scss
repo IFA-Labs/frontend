@@ -25,7 +25,7 @@
       .card-description {
         font-size: 15px;
         line-height: 22px;
-        font-family: 'Inter', sans-serif;
+        font-family: var(--font-inter);
         color: rgba(255, 255, 255, 0.8);
         font-weight: 400;
         max-width: 220px;
@@ -36,7 +36,7 @@
       }
 
       .card-number {
-        font-family: 'BIZ UDMincho', serif;
+        font-family: 'BIZ UDMincho';
         color: #ffffff;
         font-size: 64px;
         display: flex;
@@ -51,7 +51,7 @@
       }
 
       .card-label {
-        font-family: 'Inter', sans-serif;
+        font-family: var(--font-inter);
         font-size: 14px;
         color: #ffffff;
       }

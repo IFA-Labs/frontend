@@ -54,7 +54,7 @@
     a {
       overflow: hidden;
       padding: 0;
-      
+
       .logo {
         img {
           width: 105px;
@@ -63,7 +63,7 @@
 
         @media (max-width: 768px) {
           height: 42px;
-          
+
           img {
             width: 42px;
             height: 42px;
@@ -93,11 +93,11 @@
         gap: 0.8rem;
         cursor: pointer;
 
-        a, 
+        a,
         span,
         .nav-item-text {
           color: #eaeaea;
-          font-family: 'Inter', sans-serif;
+          font-family: var(--font-inter);
           font-size: 14px;
           font-weight: 400;
           text-align: center;
@@ -161,7 +161,7 @@
   border-radius: 1rem;
   filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.25));
   transition: opacity 0.1s, transform 0.1s;
-  
+
   a {
     display: flex;
     align-items: center;
@@ -187,21 +187,21 @@
       align-items: flex-start;
       gap: 0;
       padding: 0.5rem 1rem !important;
-      
+
       .title {
         color: #eaeaea;
-        font-family: 'Red Hat Text', sans-serif;
+        font-family: var(--font-red-hat-text);
         font-size: 14px;
       }
-      
+
       .desc {
         font-size: 12px;
         font-weight: 300;
-        font-family: 'Red Hat Text', sans-serif;
+        font-family: var(--font-red-hat-text);
         color: rgba(255, 255, 255, 0.6);
       }
     }
-    
+
     &:hover {
       background: #373737;
       border-radius: 1rem;
@@ -222,11 +222,11 @@
   border-radius: 8px;
   overflow: hidden;
   padding: 0.5rem 1rem;
-  
+
   &:hover {
     background-color: rgba(255, 255, 255, 0.05);
   }
-  
+
   a {
     padding: 0.5rem;
     width: 100%;
@@ -255,7 +255,7 @@
 
 .mobile-nav-container {
   display: none;
-  
+
   &.open {
     display: block;
     position: fixed;
@@ -300,7 +300,7 @@
 
 .nav-item-text {
   color: #eaeaea;
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-inter);
   font-size: 14px;
   font-weight: 400;
   text-align: center;

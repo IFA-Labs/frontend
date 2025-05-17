@@ -5,11 +5,39 @@ import '@/styles/_variable.scss';
 import { TokenProvider } from '@/components/app/api/token-provider';
 import { headers } from 'next/headers';
 import ContextProvider from '@/lib/context';
+import {
+  Inter,
+  Red_Hat_Mono,
+  Red_Hat_Text,
+} from 'next/font/google';
 
 export const metadata: Metadata = {
   title: 'IFA LABS',
   description: `The world's first Multi-chain stablecoin oracle`,
 };
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  style: ['normal', 'italic'],
+  variable: '--font-inter',
+});
+
+
+
+const redHatMono = Red_Hat_Mono({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-red-hat-mono',
+});
+
+const redHatText = Red_Hat_Text({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-red-hat-text',
+});
 
 export default async function RootLayout({
   children,
@@ -20,7 +48,9 @@ export default async function RootLayout({
   const cookies = headersObj.get('cookie');
   return (
     <html lang="en">
-      <body>
+      <body
+        className={`${inter.variable}  ${redHatMono.variable} ${redHatText.variable}`}
+      >
         <ContextProvider cookies={cookies}>
           <TokenProvider>{children}</TokenProvider>
         </ContextProvider>

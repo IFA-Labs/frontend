@@ -45,7 +45,7 @@
       }
       .tvl-value {
         margin-top: 1rem;
-        font-family: 'BIZ UDMincho', serif;
+        font-family: 'BIZ UDMincho';
         letter-spacing: -2.8px;
         font-size: 56px;
         line-height: 48px;
@@ -88,7 +88,7 @@
         border-bottom: 1px solid rgba(255, 255, 255, 0.16);
 
         .my-pool-card-header-title {
-          font-family: 'BIZ UDMincho', serif;
+          font-family: 'BIZ UDMincho';
           font-weight: 400;
           font-size: 24px;
           color: #fff;
@@ -131,7 +131,7 @@
               padding: 12px 20px;
 
               max-width: 48px;
-              font-family: 'Red Hat Text', sans-serif;
+              font-family: var(--font-red-hat-text);
               font-size: 14px;
               color: #151515;
 
@@ -176,7 +176,7 @@
         }
         .empty-pool-card-title {
           margin-top: 0.5rem;
-          font-family: 'BIZ UDMincho', serif;
+          font-family: 'BIZ UDMincho';
           font-size: 24px;
           font-weight: 600;
           color: #ececec;
@@ -212,7 +212,7 @@
     padding-left: 1.5rem;
 
     .header-cell {
-      font-family: 'Red Hat Text', sans-serif;
+      font-family: var(--font-red-hat-text);
       color: #c4c4c4;
       font-size: 12px;
       text-align: left;
@@ -228,7 +228,7 @@
       gap: 0.5rem;
       align-items: center;
       padding: 12px;
-      font-family: 'Red Hat Text', sans-serif;
+      font-family: var(--font-red-hat-text);
       font-size: 12px;
       padding-left: 1.5rem;
       height: 56px;
