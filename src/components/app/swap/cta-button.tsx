@@ -7,22 +7,15 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
 
 interface SwapCTAButtonProps {
-  /** The amount entered by the user for the 'from' token. Empty or '0' means no amount. */
   inputAmount: string;
-  /** True when the parent page is checking balance, gas, approvals, etc. (State three) */
   isCheckingDetails: boolean;
-  /** Details about whether the user can proceed or why not (State four) */
   proceedDetails: {
     canProceed: boolean;
-    message: string; // e.g., "Proceed", "Insufficient balance", "Select a token"
+    message: string;
   };
-  /** True when the swap transaction has been sent and is awaiting confirmation. */
   isExecutingSwap: boolean;
-  /** Function to call when the button is in a "Proceed" state and clicked. */
   onProceed: () => void;
-  /** Optional: Custom action for connecting wallet, defaults to opening Reown AppKit modal. */
   onConnectWalletClick?: () => void;
-  /** Optional: Tokens being swapped for notification messages */
   fromTokenSymbol?: string;
   toTokenSymbol?: string;
 }
@@ -48,7 +41,6 @@ export function SwapCTAButton({
     setMounted(true);
   }, []);
 
-  // Effect for animated loading dots
   useEffect(() => {
     if (isExecutingSwap) {
       const interval = setInterval(() => {
@@ -62,10 +54,8 @@ export function SwapCTAButton({
     return () => setLoadingDots('');
   }, [isExecutingSwap]);
 
-  // Effect for showing toast notifications during swap execution
   useEffect(() => {
     if (isExecutingSwap && !swapToastId) {
-      // Show the initial loading toast when swap starts
       const id = showToast({
         type: 'loading',
         title: 'Processing Transaction',
@@ -74,25 +64,20 @@ export function SwapCTAButton({
       });
       setSwapToastId(id);
     } else if (!isExecutingSwap && swapToastId) {
-      // When swap finishes, update the toast with success
-      // In a real implementation, you'd want to check if it was successful or failed
       updateToast(swapToastId, {
         type: 'success',
         title: 'Transaction Complete',
         message: `Successfully swapped ${inputAmount} ${fromTokenSymbol} to ${toTokenSymbol}`,
-        duration: 5000, // Auto-dismiss after 5 seconds
+        duration: 5000,
         actionLabel: 'View Transaction',
         onAction: () => {
-          // Here you could open the transaction in a block explorer
           console.log('View transaction clicked');
         },
       });
 
-      // Reset the toast ID after updating
       setSwapToastId(null);
     }
 
-    // Clean up toast if component unmounts during transaction
     return () => {
       if (swapToastId) {
         hideToast(swapToastId);
@@ -120,7 +105,6 @@ export function SwapCTAButton({
   };
 
   const handleProceed = () => {
-    // If this is an approval step, show a different toast
     if (proceedDetails.message === 'Approve') {
       showToast({
         type: 'info',
@@ -176,7 +160,6 @@ export function SwapCTAButton({
     backgroundColor: '#E6DAFE80', // Semi-transparent version of the enabled button
   };
 
-  // Avoid rendering wallet-dependent UI until component is mounted (for SSR/hydration)
   if (!mounted) {
     return (
       <button style={disabledButtonStyle} disabled>
@@ -186,7 +169,6 @@ export function SwapCTAButton({
     );
   }
 
-  // State One: User hasn't connected their wallet
   if (!isConnected) {
     return (
       <button style={enabledButtonStyle} onClick={handleOpenConnectModal}>
@@ -195,9 +177,6 @@ export function SwapCTAButton({
     );
   }
 
-  // --- Wallet is Connected from this point onwards ---
-
-  // Bonus State: Swap is currently executing (transaction sent, awaiting confirmation)
   if (isExecutingSwap) {
     return (
       <button style={processingButtonStyle} disabled>
@@ -207,8 +186,6 @@ export function SwapCTAButton({
     );
   }
 
-  // State Three: Loading to see if user has enough balance/gas
-  // (inputAmount should be present for this check to be relevant)
   const hasInputAmount = inputAmount && parseFloat(inputAmount) > 0;
   if (hasInputAmount && isCheckingDetails) {
     return (
@@ -219,7 +196,6 @@ export function SwapCTAButton({
     );
   }
 
-  // State Two: User hasn't entered an amount
   if (!hasInputAmount) {
     return (
       <button style={disabledButtonStyle} disabled>
@@ -228,20 +204,13 @@ export function SwapCTAButton({
     );
   }
 
-  // State Four: Status has been confirmed (either "Insufficient balance" or "Proceed")
-  // This state is reached if:
-  // - Wallet is connected
-  // - Swap is NOT executing
-  // - Details are NOT being checked (isCheckingDetails is false)
-  // - An input amount IS present
   if (proceedDetails.canProceed) {
     return (
       <button style={enabledButtonStyle} onClick={handleProceed}>
-        {proceedDetails.message} {/* e.g., "Proceed" */}
+        {proceedDetails.message}
       </button>
     );
   } else {
-    // Cannot proceed (e.g., "Insufficient balance", "Select a token", etc.)
     return (
       <button
         style={

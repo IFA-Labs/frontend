@@ -1,6 +1,6 @@
 'use client';
 
-import { parseUnits, formatUnits } from 'viem';
+import { parseUnits } from 'viem';
 import {
   useAccount,
   useReadContract,
@@ -8,16 +8,12 @@ import {
   useWaitForTransactionReceipt,
 } from 'wagmi';
 import { useState, useEffect } from 'react';
-
-// Contract ABIs - these would need to be imported from your contract ABI files
 import { IfaSwapRouterABI } from '@/lib/abis/swap-router-abi';
 import { ERC20ABI } from '@/lib/abis/erc20-abi';
 
-// Contract addresses from your deployment
+// Contract addresses
 const ROUTER_ADDRESS = '0xcd6ceef9081622e5d59c54b7569e0979494dc207';
-const FACTORY_ADDRESS = '0x045A543FFf5D816fBA83F8af069a13877C5E6a4B';
 
-// Interface for token approval and swap functions
 export interface SwapExecutionProps {
   fromToken: {
     address: string;
@@ -31,8 +27,8 @@ export interface SwapExecutionProps {
   };
   fromAmount: string;
   slippageTolerance: number; // e.g., 0.5 for 0.5%
-  deadline: number; // Unix timestamp deadline
-  recipient: `0x${string}`; // User address
+  deadline: number; // Unix timestamp
+  recipient: `0x${string}`;
 }
 
 interface ApprovalResult {
@@ -48,11 +44,13 @@ interface SwapResult {
   isSuccess: boolean;
   error: Error | null;
   data: any;
+  expectedOutput: bigint;
+  minAmountOut: bigint;
   execute: () => void;
 }
 
 /**
- * Hook to check and execute token approval
+ * Hook to check and execute ERC20 token approval
  */
 export function useTokenApproval(
   tokenAddress: string | undefined,
@@ -60,29 +58,28 @@ export function useTokenApproval(
   amount: string,
   decimals: number,
 ): ApprovalResult {
-  // Skip if addresses are missing
+  const { address: userAddress } = useAccount();
+
   const enabled =
     !!tokenAddress &&
     !!spenderAddress &&
+    !!userAddress &&
     amount !== '' &&
     parseFloat(amount) > 0;
 
-  // Convert amount to token units
   const amountInWei = enabled ? parseUnits(amount, decimals) : BigInt(0);
 
-  // Check allowance
   const { data: allowance } = useReadContract({
     address: tokenAddress as `0x${string}`,
     abi: ERC20ABI,
     functionName: 'allowance',
-    args: [spenderAddress as `0x${string}`, ROUTER_ADDRESS as `0x${string}`],
+    args: [userAddress as `0x${string}`, spenderAddress as `0x${string}`],
     query: {
       enabled,
       refetchInterval: 10000,
     },
   });
 
-  // Execute approval transaction
   const {
     data: approveResult,
     writeContract,
@@ -100,11 +97,10 @@ export function useTokenApproval(
       address: tokenAddress as `0x${string}`,
       abi: ERC20ABI,
       functionName: 'approve',
-      args: [ROUTER_ADDRESS as `0x${string}`, amountInWei],
+      args: [spenderAddress as `0x${string}`, amountInWei],
     });
   };
 
-  // Determine if token is approved
   const isApproved =
     enabled &&
     !!allowance &&
@@ -119,7 +115,7 @@ export function useTokenApproval(
 }
 
 /**
- * Hook to execute token swap
+ * Hook to execute a token swap
  */
 export function useSwapExecution({
   fromToken,
@@ -129,7 +125,6 @@ export function useSwapExecution({
   deadline,
   recipient,
 }: SwapExecutionProps): SwapResult {
-  // States for the swap operation
   const [expectedOutput, setExpectedOutput] = useState<bigint>(BigInt(0));
   const [minAmountOut, setMinAmountOut] = useState<bigint>(BigInt(0));
   const [isReady, setIsReady] = useState(false);
@@ -140,18 +135,15 @@ export function useSwapExecution({
     fromAmount !== '' &&
     parseFloat(fromAmount) > 0;
 
-  // Convert amount to token units
   const amountInWei = enabled
     ? parseUnits(fromAmount, fromToken.decimals)
     : BigInt(0);
 
-  // Create path for swap
   const path = [
-    fromToken?.address as `0x${string}`,
-    toToken?.address as `0x${string}`,
+    fromToken.address as `0x${string}`,
+    toToken.address as `0x${string}`,
   ];
 
-  // Get expected output amount
   const { data: amountsOut, isSuccess: isAmountsOutSuccess } = useReadContract({
     address: ROUTER_ADDRESS as `0x${string}`,
     abi: IfaSwapRouterABI,
@@ -163,7 +155,6 @@ export function useSwapExecution({
     },
   });
 
-  // Calculate minimum amount out based on slippage
   useEffect(() => {
     if (
       isAmountsOutSuccess &&
@@ -174,9 +165,9 @@ export function useSwapExecution({
       const outputAmount = amountsOut[1] as bigint;
       setExpectedOutput(outputAmount);
 
-      // Calculate minimum output with slippage
-      const slippageFactor = 1000 - slippageTolerance * 10; // e.g., 0.5% -> 995
-      const minOutput = (outputAmount * BigInt(slippageFactor)) / BigInt(1000);
+      const slippageBasisPoints = Math.floor(slippageTolerance * 100); // 0.5% => 50
+      const minOutput =
+        (outputAmount * BigInt(10000 - slippageBasisPoints)) / BigInt(10000);
       setMinAmountOut(minOutput);
       setIsReady(true);
     } else {
@@ -184,7 +175,6 @@ export function useSwapExecution({
     }
   }, [amountsOut, isAmountsOutSuccess, slippageTolerance]);
 
-  // Execute swap transaction
   const {
     data: swapResult,
     writeContract,
@@ -212,6 +202,8 @@ export function useSwapExecution({
     isSuccess,
     error: swapError,
     data: swapResult,
+    expectedOutput,
+    minAmountOut,
     execute,
   };
 }

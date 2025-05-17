@@ -2,7 +2,7 @@ import axios from 'axios';
 import { tokenList } from '@/lib/tokens';
 import { StaticImageData } from 'next/image';
 
-const API_BASE_URL = 'http://146.190.186.116:8000/api';
+const API_BASE_URL = '/api';
 
 export interface Asset {
   asset_id: string;

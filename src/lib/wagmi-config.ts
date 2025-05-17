@@ -8,7 +8,7 @@ if (!projectId) {
   throw new Error('Project ID is not defined');
 }
 
-// Define Base Sepolia network configuration
+
 const baseSepolia = {
   id: 84532,
   name: 'Base Sepolia',
@@ -33,7 +33,6 @@ const baseSepolia = {
   },
 };
 
-// Configure networks with proper RPC endpoints
 const networks = [
   {
     ...mainnet,

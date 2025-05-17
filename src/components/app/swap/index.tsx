@@ -16,14 +16,13 @@ import {
   useSwapExecution,
   getDeadlineTimestamp,
 } from '@/lib/SwapIntegration';
+import { useToast } from '@/hooks/useToast';
 
-// Add type for token display
 interface TokenDisplay {
   icon: string | StaticImageData;
   name: string;
 }
 
-// Define a constant for the NATIVE_TOKEN_ADDRESS (representing ETH)
 const NATIVE_TOKEN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
 const Swap = () => {
@@ -37,7 +36,6 @@ const Swap = () => {
   const [displayedText, setDisplayedText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // State for token information based on API data
   const [availableTokens, setAvailableTokens] = useState<
     Record<string, TokenInfo>
   >({});
@@ -46,7 +44,7 @@ const Swap = () => {
   const [fromAmount, setFromAmount] = useState<string>('');
   const [toAmount, setToAmount] = useState<string>('');
 
-  // Token display info - this is what's shown in the UI
+
   const [tokens, setTokens] = useState<{
     pay: TokenDisplay;
     receive: TokenDisplay;
@@ -69,6 +67,7 @@ const Swap = () => {
   const [approvalDebugInfo, setApprovalDebugInfo] = useState<string>('');
 
   const { address, isConnected, chain } = useAccount();
+  const { showToast } = useToast();
 
   // Contract integration - Token Approval
   const {
@@ -604,14 +603,102 @@ const Swap = () => {
   useEffect(() => {
     if (approvalError) {
       console.error('Approval Error:', approvalError);
-      // You could show an error toast/notification here
+
+      // Check specifically for user rejection
+      if (isUserRejectionError(approvalError)) {
+        console.log('User cancelled approval transaction');
+        // Reset UI state without showing an error toast
+        setIsExecutingSwap(false);
+        setIsCheckingSwapDetails(false);
+        // Optionally show a neutral toast
+        showToast({
+          type: 'info',
+          title: 'Transaction Cancelled',
+          message: 'You cancelled the token approval transaction.',
+          duration: 3000,
+        });
+      } else {
+        // Handle actual errors
+        let errorMessage = 'Failed to approve token. Please try again.';
+
+        if (approvalError.message?.includes('insufficient funds')) {
+          errorMessage =
+            'Insufficient funds for approval. Please check your balance.';
+        }
+
+        showToast({
+          type: 'error',
+          title: 'Approval Failed',
+          message: errorMessage,
+          duration: 5000,
+        });
+      }
     }
 
     if (swapError) {
       console.error('Swap Error:', swapError);
-      // You could show an error toast/notification here
+
+      // Check specifically for user rejection
+      if (isUserRejectionError(swapError)) {
+        console.log('User cancelled swap transaction');
+        // Reset UI state without showing an error toast
+        setIsExecutingSwap(false);
+        setIsCheckingSwapDetails(false);
+        // Optionally show a neutral toast
+        showToast({
+          type: 'info',
+          title: 'Transaction Cancelled',
+          message: 'You cancelled the swap transaction.',
+          duration: 3000,
+        });
+      } else {
+        // Handle actual errors
+        let errorMessage = 'Transaction failed. Please try again.';
+
+        // Handle other specific error cases
+        if (swapError.message?.includes('insufficient funds')) {
+          errorMessage =
+            'Insufficient funds for transaction. Please check your balance.';
+        } else if (
+          swapError.message?.includes('gas required exceeds allowance')
+        ) {
+          errorMessage =
+            'Insufficient gas for transaction. Please try with higher gas limit.';
+        } else if (swapError.message?.includes('execution reverted')) {
+          errorMessage =
+            'Transaction reverted. Please check your input amounts and try again.';
+        }
+
+        showToast({
+          type: 'error',
+          title: 'Swap Failed',
+          message: errorMessage,
+          duration: 5000,
+        });
+      }
     }
-  }, [approvalError, swapError]);
+  }, [approvalError, swapError, showToast]);
+
+  const isUserRejectionError = (error: any) => {
+    if (!error) return false;
+
+    const errorMsg = error.message || error.shortMessage || '';
+    const rejectionPhrases = [
+      'user rejected',
+      'user denied',
+      'user cancelled',
+      'rejected by user',
+      'denied by user',
+      'user declined',
+      'user rejected the request',
+      'user denied transaction signature',
+      'metamask tx signature: user denied',
+    ];
+
+    return rejectionPhrases.some((phrase) =>
+      errorMsg.toLowerCase().includes(phrase.toLowerCase()),
+    );
+  };
 
   return (
     <div className="swap-section-container">
@@ -714,12 +801,7 @@ const Swap = () => {
             isExecutingSwap={isExecutingSwap || isApproving || isSwapLoading}
             onProceed={executeTransaction}
           />
-          {/* Debug info - remove in production
-          {process.env.NODE_ENV === 'development' && (
-            <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-              {approvalDebugInfo}
-            </div>
-          )} */}
+
           <SelectTokenModal
             isOpen={isModalOpen}
             onClose={() => setModalOpen(false)}

@@ -8,7 +8,7 @@ import ContextProvider from '@/lib/context';
 
 export const metadata: Metadata = {
   title: 'IFA LABS',
-  description: 'IFA LABS',
+  description: `The world's first Multi-chain stablecoin oracle`,
 };
 
 export default async function RootLayout({
@@ -22,10 +22,7 @@ export default async function RootLayout({
     <html lang="en">
       <body>
         <ContextProvider cookies={cookies}>
-          <TokenProvider>
-
-              {children}
-          </TokenProvider>
+          <TokenProvider>{children}</TokenProvider>
         </ContextProvider>
       </body>
     </html>

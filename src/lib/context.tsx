@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createAppKit } from '@reown/appkit/react';
 import { mainnet, sepolia, base, baseSepolia } from '@reown/appkit/networks';
 import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi';
+import logoIcon from '../../public/images/logo-icon.svg';
 
 const queryClient = new QueryClient();
 
@@ -16,7 +17,7 @@ const metadata = {
   name: 'Ifa Labs',
   description: 'Ifa Labs DEX',
   url: 'https://www.ifalabs.com/',
-  icons: ['https://avatars.githubusercontent.com/u/179229932'],
+  icons: [logoIcon],
 };
 
 const META_MASK_ID =
