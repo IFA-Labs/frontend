@@ -5,12 +5,8 @@ import '@/styles/_variable.scss';
 import { TokenProvider } from '@/components/app/api/token-provider';
 import { headers } from 'next/headers';
 import ContextProvider from '@/lib/context';
-import {
-  Inter,
-  Red_Hat_Mono,
-  Red_Hat_Text,
-} from 'next/font/google';
-
+import { Inter, Red_Hat_Mono, Red_Hat_Text } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 export const metadata: Metadata = {
   title: 'IFA LABS',
   description: `The world's first Multi-chain stablecoin oracle`,
@@ -22,8 +18,6 @@ const inter = Inter({
   style: ['normal', 'italic'],
   variable: '--font-inter',
 });
-
-
 
 const redHatMono = Red_Hat_Mono({
   subsets: ['latin'],
@@ -52,7 +46,10 @@ export default async function RootLayout({
         className={`${inter.variable}  ${redHatMono.variable} ${redHatText.variable}`}
       >
         <ContextProvider cookies={cookies}>
-          <TokenProvider>{children}</TokenProvider>
+          <TokenProvider>
+            {children}
+            <Analytics />
+          </TokenProvider>
         </ContextProvider>
       </body>
     </html>
