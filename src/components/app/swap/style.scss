@@ -217,55 +217,16 @@
   }
 }
 
-// .swap-main::before {
-//   content: ' ';
-//   position: absolute;
-//   inset: calc(2px * -1);
-//   z-index: -1;
-//   border: inherit;
-//   border-radius: inherit;
-//   background-image: conic-gradient(
-//     from var(--angle),
-//     #ffffff6d 80%,
-//     #e0d1ff 88%,
-//     #e0d1ff 92%,
-//     #ffffff 100%
-//   );
-//   background-origin: border-box;
-//   -webkit-mask: linear-gradient(white, green) content-box,
-//     linear-gradient(green, green);
-//   mask: linear-gradient(green, green), linear-gradient(green, green);
-//   -webkit-mask-clip: content-box, border-box;
-//   mask-clip: content-box, border-box;
-//   -webkit-mask-composite: xor;
-//   mask-composite: exclude;
-//   animation: spin 3s linear infinite;
-// }
-
-// @supports not (background: paint(something)) {
-//   .swap-main::before {
-//     background-image: conic-gradient(
-//       #ffffff 80%,
-//       #e0d1ff 88%,
-//       #e0d1ff 92%,
-//       #ffffff 100%
-//     );
-//   }
-// }
-
-// .swap-main:hover::before {
-//   animation-play-state: paused;
-// }
-
 .animated-word {
   display: inline-block;
-  white-space: pre; /* Preserve spaces */
+  white-space: pre;
   transition: opacity 0.2s ease;
 }
 
 .cursor {
   display: inline-block;
   animation: blink 0.7s infinite;
+  margin-left: -0.15em;
 }
 
 @keyframes blink {

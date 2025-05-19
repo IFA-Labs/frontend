@@ -1,9 +1,7 @@
 import React from 'react';
-import Image from 'next/image';
 import { Logo } from '@/components/svg';
 import Link from 'next/link';
 import { ConnectWallet } from '@/components/connect-wallet-button';
-import { BetterConnectWallet } from '@/components/button-test';
 const Navbar = () => {
   return (
     <div className="app-navbar">

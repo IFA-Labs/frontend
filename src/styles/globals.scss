@@ -33,11 +33,11 @@ html {
   }
 }
 
-html *,
-html *::after,
-html *::before {
-  box-sizing: inherit;
-}
+// html *,
+// html *::after,
+// html *::before {
+//   box-sizing: inherit;
+// }
 body {
   background: #020101;
   font-family: var(--font-inter);

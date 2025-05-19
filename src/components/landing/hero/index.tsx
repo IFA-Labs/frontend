@@ -4,6 +4,7 @@ import Calculator from './calculator';
 import Image from 'next/image';
 import { ArrowRightIcon } from '../../svg';
 import HeroIllustration from '../../../../public/images/hero-illustration.svg';
+
 import { KombatLogo, ConvexityLogo, BaseLogo, CngnLogo } from '../../svg';
 import CryptoTracker from './tracker';
 import TabToggle from './tab-toggle';
@@ -54,13 +55,11 @@ const Hero = () => {
         </div>
       </main>
 
-      <Image
-        src={HeroIllustration}
-        className="hero-img"
-        alt=""
-        width={680}
-        height={680}
-      />
+
+      <video autoPlay muted loop playsInline className="hero-img">
+        <source src="/images/hero-illustration-video.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     </section>
   );
 };

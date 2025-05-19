@@ -1,9 +1,11 @@
 .stats-section {
-  background-color: #050505;
+  background: #050505;
   padding: 150px 0;
   display: flex;
   justify-content: center;
   width: 100%;
+  z-index: 999999;
+  opacity: 1;
 
   .cards {
     width: 100%;

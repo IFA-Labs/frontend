@@ -44,7 +44,6 @@ const Swap = () => {
   const [fromAmount, setFromAmount] = useState<string>('');
   const [toAmount, setToAmount] = useState<string>('');
 
-
   const [tokens, setTokens] = useState<{
     pay: TokenDisplay;
     receive: TokenDisplay;
@@ -708,7 +707,6 @@ const Swap = () => {
           <span>
             <span className="animated-word">{displayedText}</span>
             <span className="cursor">|</span>
-            {/* {currentWordIndex === 0 ? 'Tokens' : 'Stablecoins'} */}
           </span>
         </div>
         <div className="swap-header-description">

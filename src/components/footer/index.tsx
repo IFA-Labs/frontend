@@ -1,9 +1,11 @@
-import React from 'react';
+'use client';
+import React, { useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FarcasterIcon, XIcon, GithubIcon } from '../svg';
-import FooterIllustation from '../../../public/images/footer-illustration.png';
-const Footer = () => {
+
+
+const Footer = () => {  
   return (
     <section className="footer-container">
       <main>
@@ -45,27 +47,42 @@ const Footer = () => {
         </div>
 
         <div className="sm-links">
-          <Link href="https://github.com/IFA-Labs/" target="_blank" rel="noopener noreferrer">
+          <Link
+            href="https://github.com/IFA-Labs/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <GithubIcon />
           </Link>
 
-          <Link href="https://x.com/ifalabs" target="_blank" rel="noopener noreferrer">
+          <Link
+            href="https://x.com/ifalabs"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <XIcon />
           </Link>
 
-          <Link href="https://warpcast.com/ifalabs" target="_blank" rel="noopener noreferrer">
+          <Link
+            href="https://warpcast.com/ifalabs"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <FarcasterIcon />
           </Link>
         </div>
       </div>
-
-      <Image
-        src={FooterIllustation}
+      <video
+        preload="auto"
+        autoPlay
+        muted
+        loop
+        playsInline
         className="footer-illustration"
-        alt=""
-        width={690}
-        height={690}
-      />
+      >
+        <source src="/images/hero-illustration-video.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     </section>
   );
 };

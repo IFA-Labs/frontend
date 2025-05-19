@@ -94,7 +94,7 @@ export function ConnectWallet() {
           {chain && renderNetworkIcon()}
           {address && (
             <span className="connect-wallet-address">
-              {address.substring(0, 6)}...
+              {address.substring(0, 3)}...
               {address.substring(address.length - 4)}
             </span>
           )}
