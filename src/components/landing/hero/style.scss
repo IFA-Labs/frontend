@@ -1,6 +1,6 @@
 .hero-container {
   min-height: 100vh;
-  background: #020101;
+  background: #000000;
   display: flex;
   justify-content: center;
   overflow: hidden !important;
@@ -89,7 +89,7 @@
 
   .hero-img {
     position: absolute;
-    left: -300px;
+    left: -350px;
     bottom: -250px;
     z-index: 0;
     // max-width: 50vw;
@@ -104,9 +104,9 @@
     flex-direction: column;
     padding: 2.5rem;
     border-radius: 32px;
-    background: #252525;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: #151515;
+    // backdrop-filter: blur(20px);
+    // -webkit-backdrop-filter: blur(20px);
     border-radius: 24px;
     width: 100%;
     max-width: 620px;
@@ -360,7 +360,7 @@
     margin-top: 0.5rem;
     display: flex;
     padding: 12px 24px;
-    background: #2f2f2f;
+    background: #212121;
     color: #888;
     font-size: 14px;
     font-weight: 400;

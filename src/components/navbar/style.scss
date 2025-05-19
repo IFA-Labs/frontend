@@ -10,7 +10,7 @@
   transform: translate(-50%);
   z-index: 1111;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  background: #020101;
+  background: #000000;
 
   @media (max-width: 1224px) {
     width: calc(100% - 4rem);
@@ -157,7 +157,7 @@
   top: 60px;
   left: 55%;
   transform: translateX(-50%);
-  background: #1c1c1c;
+  background: #151515;
   border-radius: 12px;
   min-width: 240px;
   padding: 4px;

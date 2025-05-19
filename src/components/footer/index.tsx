@@ -73,7 +73,6 @@ const Footer = () => {
         </div>
       </div>
       <video
-        preload="auto"
         autoPlay
         muted
         loop

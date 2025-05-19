@@ -171,14 +171,7 @@ const Swap = () => {
           }
         });
 
-        // ✅ Manually inject WETH if not present
-        if (!tokenMap['WETH']) {
-          const weth = tokenList['WETH'];
-          tokenMap['WETH'] = {
-            ...weth,
-            assetId: weth.assetId || 'WETH/USDT',
-          };
-        }
+    
 
         setAvailableTokens(tokenMap);
 

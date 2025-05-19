@@ -1,8 +1,9 @@
 .footer-container {
-  padding-top: 120px;
+  padding-top: 150px;
   position: relative;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 
   main {
     width: 100%;
@@ -36,8 +37,8 @@
           margin-bottom: 0.8rem;
           height: 54.59px;
           padding: 0 1.5rem;
-          background: #2a2a2a;
-          border: 1px solid #2a2a2a;
+          background: rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           outline: none;
           border-radius: 36px;
           color: #ffffff;
@@ -113,7 +114,7 @@
 
   .footer-illustration {
     position: absolute;
-    left: -350px;
+    left: -320px;
     bottom: -250px;
     z-index: -1;
   }

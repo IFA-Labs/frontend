@@ -27,14 +27,14 @@ export const tokenList: { [key: string]: TokenInfo } = {
     address: '',
     decimals: 18,
   },
-  WETH: {
-    symbol: 'WETH',
-    name: 'Wrapped ETH',
-    decimals: 18,
-    address: '0xdd13E55209Fd76AfE204dBda4007C227904f0a81',
-    icon: ETHIcon,
-    assetId: 'WETH/USDT',
-  },
+  // WETH: {
+  //   symbol: 'WETH',
+  //   name: 'Wrapped ETH',
+  //   decimals: 18,
+  //   address: '0xdd13E55209Fd76AfE204dBda4007C227904f0a81',
+  //   icon: ETHIcon,
+  //   assetId: 'WETH/USDT',
+  // },
 };
 
 export const getTokenFromSymbol = (symbol: string): TokenInfo | null => {
