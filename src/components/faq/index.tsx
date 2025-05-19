@@ -65,10 +65,10 @@ const FAQ = () => {
       answer:
         'IFÁ Swap is a native product that allows direct stablecoin-to-stablecoin swaps, powered by verified price feeds from IFÁ Labs.',
     },
-    {
-      question: 'Is IFÁ Labs audited?',
-      answer: 'Yes. You can access our audit report here.',
-    },
+    // {
+    //   question: 'Is IFÁ Labs audited?',
+    //   answer: 'Yes. You can access our audit report here.',
+    // },
     {
       question: 'What is “proof-of-source” in IFÁ Labs?',
       answer:
