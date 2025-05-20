@@ -105,12 +105,17 @@
     padding: 2.5rem;
     border-radius: 32px;
     background: #151515;
-    // backdrop-filter: blur(20px);
-    // -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(19.95px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-radius: 24px;
     width: 100%;
     max-width: 620px;
     height: max-content;
+
+    
+
+
 
     .price-wrapper {
       display: flex;

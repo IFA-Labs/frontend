@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import apiService, { TokenPrice } from '@/lib/api'; // Ensure this matches your actual API path
+import apiService, { TokenPrice } from '@/lib/api';
 
 interface TickerData {
   symbol: string;
   price: number;
-  change: number; // Currently hardcoded as 0 since API doesn't return it
+  change: number;
 }
 
 export default function CryptoTicker() {
@@ -21,7 +21,7 @@ export default function CryptoTicker() {
         const updatedData = prices.map((item) => ({
           symbol: item.symbol,
           price: item.price,
-          change: 0, // Replace with real change if available
+          change: 0,
         }));
 
         setTickerData(updatedData);

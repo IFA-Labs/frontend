@@ -48,16 +48,19 @@
     }
 
     .card {
-      padding: 24px;
+      padding: 32px;
       border-radius: 16px;
       overflow: hidden;
 
       .card-icon {
         width: 46px;
         height: 46px;
-        background-color: #d1d1d1;
+        background: #d1d1d1;
         border-radius: 8px;
         margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .card-title {
@@ -68,7 +71,7 @@
 
       .card-description {
         font-size: 14px;
-        font-weight: normal;
+        font-weight: 400;
         color: #5b5b5b;
       }
     }
@@ -82,10 +85,26 @@
       .stablecoins-card {
         background-color: #f6f6f6;
         flex-basis: 50%;
+
+        .card-icon {
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.13) 0%,
+            rgba(211, 124, 64, 0.13) 100%
+          );
+        }
       }
       .offchain-card {
         flex-basis: 50%;
         background: linear-gradient(180deg, #f6f6f6 0%, #f8f4ff 100%);
+
+        .card-icon {
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.13) 0%,
+            rgba(180, 137, 255, 0.13) 100%
+          );
+        }
       }
     }
 
@@ -98,16 +117,20 @@
       .automation-card {
         flex-basis: 70%;
         background-color: #000000;
-
+        display: flex;
+        flex-direction: column;
         .card-icon {
-          background: rgba(255, 255, 255, 0.13);
+          background: rgba(255, 255, 255, 0.12);
+          min-height: 86px;
+          min-width: 86px;
         }
         .card-title {
           color: #ffffff;
+          margin-top: auto;
         }
 
         .card-description {
-          color: #ffffff;
+          color: rgba(255, 255, 255, 0.8);
         }
       }
 
@@ -129,7 +152,29 @@
           margin: auto 0;
           width: 100%;
           white-space: nowrap;
+
+          .multichain-text-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            gap: 12px;
+            width: fit-content;
+            animation: scroll 4s ease-in-out infinite;
+
+            .multichain-text-item {
+              width: 100%;
+              max-width: max-content;
+            }
+          }
         }
+      }
+    }
+    @keyframes scroll {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-50%);
       }
     }
 
@@ -137,6 +182,31 @@
       flex-basis: 33.3333%;
       background: linear-gradient(180deg, #f6f6f6 0%, #f7e9e3 100%);
       border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+
+      .card-icon {
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        left: calc(50% - 100px / 2);
+        top: 163.61px;
+
+        background: #ffffff;
+        box-shadow: 0px 17px 22.1px #ffeadb;
+        border-radius: 17.3913px;
+      }
+
+      .card-title {
+        margin-top: auto;
+        text-align: center;
+      }
+      .card-description {
+        margin-bottom: 24px;
+        color: #5b5b5b;
+        text-align: center;
+      }
     }
   }
 }
