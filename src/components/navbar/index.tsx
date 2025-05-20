@@ -82,11 +82,11 @@ const Navbar: React.FC = () => {
     <>
       <div className="navbar-container">
         <main>
-          <Link href="/">
-            <div className="logo">
-              <Logo />
-            </div>
+          <Link href="/" className="logo">
+            <Logo />
           </Link>
+
+          
           <ul className="nav-links">
             <li
               onMouseEnter={() =>

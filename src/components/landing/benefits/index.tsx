@@ -101,12 +101,11 @@ const Benefits: React.FC = () => {
 
           <div className="card auditable-card">
             <div className="card-icon">{AuditablePriceIcon}</div>
-            <h3 className="card-title">Auditable Price Tracking</h3>
+            <h3 className="card-title">Auditable Data Sources </h3>
             <p className="card-description">
-              Aggregates and delivers data from both offchain (external sources
-              like exchanges, financial markets) and onchain
-              (blockchain-verified) sources to ensure broader and more secure
-              data coverage.
+              Transparent and verifiable data repositories that ensure
+              accountability, integrity, and trust through traceable records and
+              open access.
             </p>
           </div>
         </div>
