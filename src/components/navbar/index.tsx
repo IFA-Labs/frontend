@@ -14,7 +14,6 @@ const Navbar: React.FC = () => {
   const [showDevelopersMenu, setShowDevelopersMenu] = useState(false);
   const [mailTo, setMailTo] = useState('ifalabstudio@gmail.com');
 
-  // Timeout refs for each dropdown menu
   const resourcesTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const productsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const developersTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,7 +39,7 @@ const Navbar: React.FC = () => {
     menuSetter: React.Dispatch<React.SetStateAction<boolean>>,
     timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>,
   ) => {
-    // Set a timeout before closing the menu
+
     timeoutRef.current = setTimeout(() => {
       menuSetter(false);
     }, 100);

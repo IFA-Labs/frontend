@@ -1,10 +1,11 @@
 'use client';
-import React, { useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FarcasterIcon, XIcon, GithubIcon } from '../svg';
 
 const Footer = () => {
+  const [mailTo, setMailTo] = useState('ifalabstudio@gmail.com');
   return (
     <section className="footer-container">
       <main>
@@ -22,19 +23,25 @@ const Footer = () => {
           <label htmlFor="">Links</label>
           <ul>
             <li>
-              <a href="">Developers</a>
+              <a
+                href="https://github.com/IFA-Labs/oracle_contract"
+                target="_blank"
+                rel="noopener"
+              >
+                Developers
+              </a>
             </li>
             <li>
-              <a href="">Products</a>
+              <a href="/swap">Swap</a>
             </li>
             <li>
-              <a href="">Resources</a>
+              <a href="/blog">Blog</a>
             </li>
             <li>
-              <a href="">Ecosystem</a>
+              <a href="/faq">FAQs</a>
             </li>
             <li>
-              <a href="">Community</a>
+              <a href={`mailto:${mailTo}`}>Contact</a>
             </li>
           </ul>
         </div>
@@ -44,7 +51,7 @@ const Footer = () => {
           <div>
             ©2025 Ifalabs <span>✦ 9:00 Lagos (WAT)</span>
           </div>
-          <div className='privacy-link'>Privacy Statement</div>
+          <div className="privacy-link">Privacy Statement</div>
         </div>
 
         <div className="sm-links">

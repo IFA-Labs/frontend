@@ -13,8 +13,9 @@
     font-weight: 500;
 
     @media (max-width: 600px) {
-      padding: 6px 0px;
+      padding: 4px 0px;
       font-size: 14px !important;
+      height: 36px;
     }
     &--loading {
       color: #151515;
@@ -88,4 +89,8 @@
   cursor: pointer;
   gap: 0.5rem;
   overflow: hidden;
+  @media (max-width: 600px) {
+    max-height: 36px;
+    font-size: 14px;
+  }
 }
