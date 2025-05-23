@@ -32,9 +32,8 @@ const Blog = () => {
       <div className="header">
         <div className="title">Blog</div>
         <div className="desc">
-          Explore our collection of articles covering thought leadership,
-          engineering, blockchain trends, how to integrate with Blockradar API
-          and more.
+          Explore Ifa Labs insights on trustless oracles, multi-chain data
+          feeds, engineering, blockchain trends, and Blockradar API integration.
         </div>
       </div>
 

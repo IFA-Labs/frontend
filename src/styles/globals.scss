@@ -69,3 +69,24 @@ button {
 .font-inter {
   font-family: var(--font-inter);
 }
+
+.branding-only {
+  @media (max-width: 600px) {
+    display: none !important;
+  }
+}
+.guide {
+  display: none !important;
+}
+
+.guide-container {
+  display: none !important;
+}
+
+.w3m-legal-footer {
+  display: none !important;
+}
+
+.w3m-modal-container {
+  display: none !important;
+}

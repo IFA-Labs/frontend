@@ -1,19 +1,26 @@
 .news-section {
   color: #fff;
-  padding: 150px 2rem;
-
-  width: 100%;
-  max-width: 1564px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  margin: 0 auto;
-  margin-bottom: 100px;
+  padding: 150px 50px;
+  padding-bottom: 250px;
+
+  @media (max-width: 1024px) {
+    padding: 200px 1.5rem;
+  }
+
+  @media (max-width: 600px) {
+    padding: 100px 1rem;
+    width: 100%;
+  }
 
   .header {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
 
     .blog-title {
       display: flex;
@@ -27,12 +34,21 @@
       border-radius: 100px;
       font-size: 14px;
       border: none;
+
+      @media (max-width: 600px) {
+        font-size: 12px;
+        padding: 4px 8px;
+      }
     }
     .title {
       font-family: 'BIZ UDMincho';
       font-size: 2.5rem;
       font-weight: 500;
       margin-top: 1rem;
+
+      @media (max-width: 600px) {
+        font-size: 2rem;
+      }
     }
 
     .view-all {
@@ -59,11 +75,28 @@
       }
     }
   }
+  main {
+    width: 100%;
+    max-width: 1500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0 auto;
 
-  .blog-cards {
-    margin-top: 100px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
-    gap: 2rem;
+    .blog-cards {
+      margin-top: 100px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(430px, 1fr));
+      gap: 2rem;
+      overflow: hidden;
+
+      @media (max-width: 1024px) {
+        gap: 3rem;
+      }
+      @media (max-width: 600px) {
+        display: flex;
+        flex-direction: column;
+      }
+    }
   }
 }

@@ -1,11 +1,18 @@
 .stats-section {
   background: #050505;
-  padding: 150px 0;
   display: flex;
   justify-content: center;
   width: 100%;
   z-index: 999999;
-  opacity: 1;
+  padding: 150px 50px;
+
+  @media (max-width: 1024px) {
+    padding: 150px 1.5rem;
+  }
+
+  @media (max-width: 600px) {
+    padding: 100px 1rem;
+  }
 
   .cards {
     width: 100%;
@@ -14,15 +21,37 @@
     flex-direction: row;
     gap: 1.5rem;
 
+    @media (max-width: 1124px) {
+      gap: 1rem;
+    }
+    @media (max-width: 1024px) {
+      display: grid;
+      gap: 2rem;
+      grid-template-columns: auto auto;
+    }
+    @media (max-width: 600px) {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: auto;
+    }
     .card {
       flex-basis: 25%;
       background-color: #111111;
       border-radius: 1rem;
       padding: 2rem;
-      min-width: 260px;
       position: relative;
       display: flex;
       flex-direction: column;
+
+      @media (max-width: 1124px) {
+        padding: 1.5rem;
+      }
+      @media (max-width: 1024px) {
+        padding: 2rem;
+      }
+      @media (max-width: 600px) {
+        padding: 1.8rem;
+      }
 
       .card-description {
         font-size: 15px;
@@ -31,6 +60,10 @@
         color: rgba(255, 255, 255, 0.8);
         font-weight: 400;
         max-width: 220px;
+
+        @media (max-width: 1024px) {
+          max-width: 100%;
+        }
       }
 
       .stat {
@@ -50,12 +83,21 @@
         width: max-content;
         padding-right: 2rem;
         transition: all 0.4s linear;
+
+        @media (max-width: 1124px) {
+          font-size: 48px;
+          margin-top: 80px;
+        }
+        @media (max-width: 600px) {
+          margin-top: 40px;
+        }
       }
 
       .card-label {
         font-family: var(--font-inter);
-        font-size: 14px;
+        font-size: 13px;
         color: #ffffff;
+        font-weight: 400;
       }
       .plus-icon {
         font-size: 24px;

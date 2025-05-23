@@ -14,7 +14,7 @@ const Pool = () => {
           <label>
             TVL <InfoIcon />
           </label>
-          <div className="tvl-value">$1000.0</div>
+          <div className="tvl-value">$1000.00</div>
         </div>
 
         <div className="cta">Collect Rewards</div>

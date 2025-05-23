@@ -6,39 +6,23 @@ interface TabToggleProps {
 }
 
 const TabToggle: React.FC<TabToggleProps> = ({ activeTab, setActiveTab }) => {
-  const [sliderPosition, setSliderPosition] = useState({ left: 0, width: 0 });
-  const cryptoTabRef = useRef<HTMLButtonElement>(null);
-  const swapTabRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    const targetRef = activeTab === 'crypto' ? cryptoTabRef : swapTabRef;
-    if (targetRef.current) {
-      setSliderPosition({
-        left: targetRef.current.offsetLeft,
-        width: targetRef.current.offsetWidth,
-      });
-    }
-  }, [activeTab]);
 
   return (
-    <div className="tab-toggle">
+    <div className="toggle-wrapper">
       <div
-        className="slider"
-        style={{
-          left: `${sliderPosition.left}px`,
-          width: `${sliderPosition.width}px`,
-        }}
+        className={`toggle-slider ${
+          activeTab === 'crypto' ? 'crypto' : 'swap'
+        }`}
       />
       <button
-        ref={cryptoTabRef}
-        className={`tab-button ${activeTab === 'crypto' ? 'active' : ''}`}
+        className={activeTab === 'crypto' ? 'active' : ''}
         onClick={() => setActiveTab('crypto')}
       >
         Crypto
       </button>
       <button
-        ref={swapTabRef}
-        className={`tab-button ${activeTab === 'swap' ? 'active' : ''}`}
+        className={activeTab === 'swap' ? 'active' : ''}
         onClick={() => setActiveTab('swap')}
       >
         Swap

@@ -4,6 +4,11 @@
   flex-direction: column;
   position: relative;
   padding-top: 70px;
+  overflow: hidden !important;
+
+  @media (max-width: 600px) {
+    max-width: 100%;
+  }
 
   .image-placeholder {
     height: 170px;
@@ -16,6 +21,12 @@
     transform: translateX(-50%);
     top: 0;
     z-index: 111;
+
+    @media (max-width: 600px) {
+      width: 100%;
+      max-width: calc(100% - 2rem);
+      height: 150px;
+    }
 
     img {
       width: 100%;
@@ -30,11 +41,16 @@
     padding-top: 100px;
     background: #fff;
     border-radius: 1rem;
-    // min-height: 324px;
+
+    @media (max-width: 600px) {
+      padding: 1rem;
+      padding-top: 60px;
+    }
   }
 
   .card-body {
     margin-top: 40px;
+
     h3 {
       font-family: 'BIZ UDMincho';
       font-style: normal;
@@ -43,12 +59,20 @@
       line-height: 120%;
       letter-spacing: -0.96px;
       color: #121212;
-      
+
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
       text-overflow: ellipsis;
+
+      @media (max-width: 1024px) {
+        font-size: 20px;
+      }
+      @media (max-width: 600px) {
+        font-size: 18px;
+        line-height: 130%;
+      }
     }
 
     .date {
@@ -61,6 +85,10 @@
       color: hsla(0, 0%, 7%, 0.6);
       text-align: left;
       border-top: 1px solid #e7e5e0;
+
+      @media (max-width: 600px) {
+        padding-top: 16px;
+      }
     }
   }
 }

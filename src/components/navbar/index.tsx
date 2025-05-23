@@ -29,7 +29,6 @@ const Navbar: React.FC = () => {
     menuSetter: React.Dispatch<React.SetStateAction<boolean>>,
     timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>,
   ) => {
-    // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
@@ -86,7 +85,6 @@ const Navbar: React.FC = () => {
             <Logo />
           </Link>
 
-          
           <ul className="nav-links">
             <li
               onMouseEnter={() =>
@@ -248,40 +246,55 @@ const Navbar: React.FC = () => {
         </div>
       )}
 
-      {/* <div className={`mobile-nav-container ${isMenuOpen ? 'open' : ''}`}>
+      <div className={`mobile-nav-container ${isMenuOpen ? 'open' : ''}`}>
         <div className="mobile-nav animate-slide-up ">
           <ul className="nav-links">
-            <li>
-              <Link href="/" onClick={() => setIsMenuOpen(false)}>
-                Home
-              </Link>
+            <li
+              onMouseEnter={() =>
+                handleMouseEnter(setShowDevelopersMenu, developersTimeoutRef)
+              }
+              onMouseLeave={() =>
+                handleMouseLeave(setShowDevelopersMenu, developersTimeoutRef)
+              }
+              className="resources-dropdown"
+            >
+              <div className="nav-item-text">Developers</div>
+              <MenuIcon />
+            </li>
+            <li
+              onMouseEnter={() =>
+                handleMouseEnter(setShowProductsMenu, productsTimeoutRef)
+              }
+              onMouseLeave={() =>
+                handleMouseLeave(setShowProductsMenu, productsTimeoutRef)
+              }
+              className="resources-dropdown"
+            >
+              <div className="nav-item-text">Products</div>
+              <MenuIcon />
+            </li>
+
+            <li
+              onMouseEnter={() =>
+                handleMouseEnter(setShowResourcesMenu, resourcesTimeoutRef)
+              }
+              onMouseLeave={() =>
+                handleMouseLeave(setShowResourcesMenu, resourcesTimeoutRef)
+              }
+              className="resources-dropdown"
+            >
+              <div className="nav-item-text">Resources</div>
+              <MenuIcon />
             </li>
             <li>
-              <Link href="/about" onClick={() => setIsMenuOpen(false)}>
-                About
-              </Link>
-            </li>
-            <li>
-              <Link href="" onClick={() => setIsMenuOpen(false)}>
-                Merch <span>Coming soon!</span>
-              </Link>
-            </li>
-            <li>
-              <span
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  openModal();
-                }}
-              >
-                Contact
-              </span>
+              <Link href="/swap">Swap</Link>
             </li>
           </ul>
-          <Link href="/classes" id="join" onClick={() => setIsMenuOpen(false)}>
+          <Link href="/" id="join">
             <button className="cta">Get Started</button>
           </Link>
         </div>
-      </div> */}
+      </div>
     </>
   );
 };

@@ -1,51 +1,36 @@
 export const HamburgerIcon: React.FC = () => (
   <svg
-    width="26"
-    height="14"
-    viewBox="0 0 26 14"
+    width="20"
+    height="12"
+    viewBox="0 0 20 12"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <path
-      d="M1 1H25"
-      stroke="#060506"
-      strokeWidth="1.5"
-      strokeLinecap="square"
-    />
-    <path
-      d="M1 7H25"
-      stroke="#060506"
-      strokeWidth="1.5"
-      strokeLinecap="square"
-    />
-    <path
-      d="M1 13H25"
-      stroke="#060506"
-      strokeWidth="1.5"
-      strokeLinecap="square"
-    />
+    <path d="M1 1H19" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M1 6H19" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M1 11H19" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
 
 export const CloseIcon: React.FC = () => (
   <svg
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
+    width="14"
+    height="14"
+    viewBox="0 0 14 14"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
-      d="M6.37891 17.8562L17.8578 6.37733"
-      stroke="#060506"
-      strokeWidth="1.5219"
+      d="M1.17188 13.17L13.1719 1.17004"
+      stroke="white"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
     <path
-      d="M17.8578 17.8563L6.37891 6.37744"
-      stroke="#060506"
-      strokeWidth="1.5219"
+      d="M13.1719 13.17L1.17188 1.17004"
+      stroke="white"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />

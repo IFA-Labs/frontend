@@ -1,9 +1,17 @@
 .why-oracle-section {
-  padding: 150px 16px;
   background-color: #ffffff;
   border-radius: 1.5rem;
   display: flex;
   flex-direction: column;
+  padding: 150px 50px;
+
+  @media (max-width: 1024px) {
+    padding: 150px 1.5rem;
+  }
+
+  @media (max-width: 600px) {
+    padding: 120px 1rem;
+  }
 
   .section-container {
     width: 100%;
@@ -18,9 +26,13 @@
 
     .section-title {
       font-family: 'BIZ UDMincho';
-      font-size: 48px;
+      font-size: 2.5rem;
       font-weight: bold;
       color: #000000;
+
+      @media (max-width: 600px) {
+        font-size: 2rem;
+      }
     }
 
     .pill {
@@ -31,6 +43,11 @@
       font-size: 14px;
       border: none;
       cursor: pointer;
+
+      @media (max-width: 600px) {
+        font-size: 12px;
+        padding: 4px 8px;
+      }
     }
   }
 
@@ -39,12 +56,17 @@
     display: flex;
     gap: 1.5rem;
 
-    @media (min-width: 768px) {
-      grid-template-columns: repeat(2, 1fr);
+    @media (max-width: 1124px) {
+      gap: 1rem;
     }
-
-    @media (min-width: 1024px) {
-      grid-template-columns: repeat(3, 1fr);
+    @media (max-width: 1024px) {
+      flex: 3fr 1fr 1fr;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 600px) {
+      margin-top: 50px;
+      flex-direction: column;
+      flex-wrap: nowrap;
     }
 
     .card {
@@ -52,6 +74,15 @@
       border-radius: 16px;
       overflow: hidden;
 
+      @media (max-width: 1124px) {
+        padding: 1.5rem;
+      }
+      @media (max-width: 768px) {
+        padding: 1rem;
+      }
+      @media (max-width: 600px) {
+        padding: 2rem 1.5rem;
+      }
       .card-icon {
         width: 46px;
         height: 46px;
@@ -67,12 +98,19 @@
         font-family: 'BIZ UDMincho';
         font-size: 20px;
         margin-bottom: 12px;
+        overflow: hidden;
+
+        @media (max-width: 768px) {
+          font-size: 18px;
+          margin-bottom: 8px;
+        }
       }
 
       .card-description {
         font-size: 14px;
         font-weight: 400;
         color: #5b5b5b;
+        overflow: hidden;
       }
     }
 
@@ -82,6 +120,16 @@
       flex-direction: column;
       gap: 1.5rem;
 
+      @media (max-width: 1124px) {
+        gap: 1rem;
+      }
+      @media (max-width: 1024px) {
+        flex-basis: 100%;
+        flex-direction: row;
+      }
+      @media (max-width: 600px) {
+        flex-direction: column;
+      }
       .stablecoins-card {
         background-color: #f6f6f6;
         flex-basis: 50%;
@@ -114,15 +162,39 @@
       flex-direction: column;
       gap: 1.5rem;
 
+      @media (max-width: 1124px) {
+        gap: 1rem;
+      }
+      @media (max-width: 1024px) {
+        flex-basis: 50%;
+      }
+
       .automation-card {
         flex-basis: 70%;
         background-color: #000000;
         display: flex;
         flex-direction: column;
+
+        @media (max-width: 1024px) {
+          flex-basis: 75%;
+        }
+        @media (max-width: 768px) {
+          flex-basis: 80%;
+        }
         .card-icon {
           background: rgba(255, 255, 255, 0.12);
           min-height: 86px;
           min-width: 86px;
+
+          @media (max-width: 768px) {
+            min-height: 64px;
+            min-width: 64px;
+
+            svg {
+              width: 30px;
+              height: 30px;
+            }
+          }
         }
         .card-title {
           color: #ffffff;
@@ -142,16 +214,32 @@
         justify-content: center;
         align-items: center;
 
+        @media (max-width: 1024px) {
+          flex-basis: 25%;
+        }
+
+        @media (max-width: 768px) {
+          flex-basis: 20%;
+        }
+
         .card-title {
           font-family: 'BIZ UDMincho';
           font-style: normal;
           font-size: 48px;
-          line-height: 53px;
+          line-height: normal;
           letter-spacing: -1.92px;
           color: #000000;
           margin: auto 0;
           width: 100%;
           white-space: nowrap;
+          overflow: hidden;
+          @media (max-width: 1024px) {
+            font-size: 40px;
+          }
+
+          @media (max-width: 768px) {
+            font-size: 28px;
+          }
 
           .multichain-text-wrapper {
             display: flex;
@@ -186,6 +274,15 @@
       flex-direction: column;
       position: relative;
 
+      @media (max-width: 1024px) {
+        flex: 1;
+      }
+
+      @media (max-width: 600px) {
+        flex-basis: 100%;
+        padding-top: 200px;
+      }
+
       .card-icon {
         position: absolute;
         width: 100px;
@@ -196,6 +293,15 @@
         background: #ffffff;
         box-shadow: 0px 17px 22.1px #ffeadb;
         border-radius: 17.3913px;
+
+        @media (max-width: 1024px) {
+          top: 20%;
+        }
+
+        @media (max-width: 768px) {
+          width: 80px;
+          height: 80px;
+        }
       }
 
       .card-title {

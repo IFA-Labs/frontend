@@ -4,8 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FarcasterIcon, XIcon, GithubIcon } from '../svg';
 
-
-const Footer = () => {  
+const Footer = () => {
   return (
     <section className="footer-container">
       <main>
@@ -42,8 +41,10 @@ const Footer = () => {
       </main>
       <div className="footer-bottom">
         <div className="left">
-          <div>©2025 Ifalabs ✦ 9:00 Lagos (WAT)</div>
-          <div>Privacy Statement</div>
+          <div>
+            ©2025 Ifalabs <span>✦ 9:00 Lagos (WAT)</span>
+          </div>
+          <div className='privacy-link'>Privacy Statement</div>
         </div>
 
         <div className="sm-links">
@@ -72,13 +73,7 @@ const Footer = () => {
           </Link>
         </div>
       </div>
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="footer-illustration"
-      >
+      <video autoPlay muted loop playsInline className="footer-illustration">
         <source src="/images/hero-illustration-video.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>

@@ -26,7 +26,7 @@ const WhyOracleCard: React.FC<{
 
 const MultchainTextItem = [
   {
-    title: 'Multicain',
+    title: 'Multi-chain',
   },
   {
     title: 'Data',
@@ -35,7 +35,16 @@ const MultchainTextItem = [
     title: 'Interchange',
   },
   {
-    title: 'Multicain',
+    title: 'Multi-chain',
+  },
+  {
+    title: 'Data',
+  },
+  {
+    title: 'Interchange',
+  },
+  {
+    title: 'Multi-chain',
   },
   {
     title: 'Data',

@@ -10,6 +10,15 @@
   // z-index: 11;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
   background: #000000;
+  padding: 0 50px;
+
+  @media (max-width: 1024px) {
+    padding: 0 1.5rem;
+  }
+
+  @media (max-width: 600px) {
+    padding: 0rem 1rem;
+  }
 
   main {
     padding: 1rem 0;
@@ -23,7 +32,22 @@
     .logo {
       overflow: hidden;
       padding: 0;
-      margin: 0;
+
+      svg {
+        width: 140px;
+      }
+
+      @media (max-width: 1124px) {
+        svg {
+          width: 120px;
+        }
+      }
+      @media (max-width: 768px) {
+        justify-content: flex-start;
+        svg {
+          width: 120px;
+        }
+      }
     }
 
     .nav-links {
@@ -34,6 +58,14 @@
       position: absolute;
       right: 50%;
       transform: translate(50%);
+
+      @media (max-width: 1124px) {
+        gap: 1rem;
+      }
+
+      @media (max-width: 768px) {
+        display: none;
+      }
       li {
         display: flex;
         align-items: center;
@@ -61,10 +93,70 @@
       align-items: center;
       padding: 16px;
       gap: 10px;
-      //   width: 125px;
       height: 49px;
       background: #ffffff;
       border-radius: 60px;
+      overflow: hidden;
+
+      @media (max-width: 768px) {
+        padding: 4px 0.5rem;
+        margin-left: auto;
+        margin-right: 1rem;
+        height: 42px;
+      }
     }
+
+    .hamburger {
+      display: none;
+
+      @media (max-width: 768px) {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        svg {
+          width: 24px;
+          height: 24px;
+        }
+      }
+    }
+  }
+}
+
+// .mobile-nav-container {
+//   display: none;
+
+//   &.open {
+//     display: block;
+//     position: fixed;
+//     top: 100px;
+//     left: 0;
+//     right: 0;
+//     bottom: 0;
+//     background: rgba(0, 0, 0, 0.9);
+//     z-index: 222222;
+//     overflow-y: auto;
+//   }
+// }
+
+// .mobile-nav {
+//   padding: 80px 24px 24px;
+//   display: flex;
+//   flex-direction: column;
+//   gap: 32px;
+// }
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

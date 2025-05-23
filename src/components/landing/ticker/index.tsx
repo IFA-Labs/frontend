@@ -63,7 +63,7 @@ export default function CryptoTicker() {
                   $
                   {item.price.toLocaleString(undefined, {
                     minimumFractionDigits: 4,
-                    maximumFractionDigits: 9,
+                    maximumFractionDigits: 5,
                   })}
                 </p>
                 <p className="change">

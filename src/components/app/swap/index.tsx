@@ -61,8 +61,7 @@ const Swap = () => {
   const [tokenPrices, setTokenPrices] = useState<Record<string, number>>({});
   const [priceImpact, setPriceImpact] = useState<string>('Low');
   const [minReceived, setMinReceived] = useState<string>('0');
-  const [slippageTolerance, setSlippageTolerance] = useState<number>(0.5); // Default to 0.5%
-  // Add debug state to track approval process
+  const [slippageTolerance, setSlippageTolerance] = useState<number>(0.5);
   const [approvalDebugInfo, setApprovalDebugInfo] = useState<string>('');
 
   const { address, isConnected, chain } = useAccount();
@@ -170,8 +169,6 @@ const Swap = () => {
             };
           }
         });
-
-    
 
         setAvailableTokens(tokenMap);
 
@@ -703,7 +700,7 @@ const Swap = () => {
           </span>
         </div>
         <div className="swap-header-description">
-          Swap tokens with ease using our secure and user-friendly platform.
+          Swap tokens with ease using our secure and user-friendly platform
         </div>
       </div>
       <main className="swap-main">

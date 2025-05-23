@@ -1,6 +1,8 @@
+'use client';
 import React from 'react';
 import { StaticImageData } from 'next/image';
 import Image from 'next/image';
+
 interface BlogCardProps {
   title: string;
   date: string;

@@ -93,8 +93,8 @@ const CryptoTracker: React.FC = () => {
               <div className="column price">
                 $
                 {crypto.price.toLocaleString(undefined, {
-                  minimumFractionDigits: 9,
-                  maximumFractionDigits: 9,
+                  minimumFractionDigits: 7,
+                  maximumFractionDigits: 7,
                 })}
               </div>
               <div className="column change positive">

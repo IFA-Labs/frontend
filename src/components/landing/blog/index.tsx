@@ -46,18 +46,24 @@ const BlogSection: React.FC = () => {
           </a>
         </div>
       </div>
-      <div className="blog-cards">
-        {blogPosts.map((post, idx) => (
-          <Link
-            href={post.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            key={idx}
-          >
-            <BlogCard title={post.title} date={post.date} cover={post.cover} />
-          </Link>
-        ))}
-      </div>
+      <main>
+        <div className="blog-cards">
+          {blogPosts.map((post, index) => (
+            <Link
+              href={post.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              key={index}
+            >
+              <BlogCard
+                title={post.title}
+                date={post.date}
+                cover={post.cover}
+              />
+            </Link>
+          ))}
+        </div>
+      </main>
     </section>
   );
 };

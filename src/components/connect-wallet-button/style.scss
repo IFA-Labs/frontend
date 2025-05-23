@@ -1,5 +1,4 @@
 .connect-wallet {
-
   &-button {
     padding: 8px 0px;
     border: 0;
@@ -13,6 +12,10 @@
     background: #fff;
     font-weight: 500;
 
+    @media (max-width: 600px) {
+      padding: 6px 0px;
+      font-size: 14px !important;
+    }
     &--loading {
       color: #151515;
       cursor: default;
@@ -23,12 +26,17 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 3px 0px;
+    padding: 2px 0px;
     border: 0;
     border-radius: 5px;
     cursor: pointer;
     font-size: 16px;
     line-height: normal;
+    overflow: hidden;
+
+    @media (max-width: 600px) {
+      font-size: 14px !important;
+    }
   }
 
   &-network {
@@ -45,10 +53,18 @@
 
   &-address {
     color: #555;
+
+    @media (max-width: 600px) {
+      display: none;
+    }
   }
 
   &-balance {
     color: #333;
+
+    @media (max-width: 600px) {
+      font-size: 14px;
+    }
   }
 
   &-error {

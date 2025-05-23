@@ -1,17 +1,32 @@
 .footer-container {
-  padding-top: 150px;
   position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding: 150px 50px;
+  padding-bottom: 0px;
 
+  @media (max-width: 1024px) {
+    padding: 150px 1.5rem;
+    padding-bottom: 0px;
+  }
+
+  @media (max-width: 600px) {
+    padding: 50px 1rem;
+    padding-bottom: 0px;
+  }
   main {
     width: 100%;
     max-width: 1500px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
+    gap: 4rem;
 
+    @media (max-width: 600px) {
+      flex-direction: column;
+      gap: 4rem;
+    }
     .newsletter-form-container {
       display: flex;
       flex-direction: column;
@@ -24,6 +39,10 @@
         font-size: 24px;
         line-height: 30px;
         color: #f3efef;
+
+        @media (max-width: 600px) {
+          font-size: 22px;
+        }
       }
 
       .newsletter-form {
@@ -33,6 +52,9 @@
         width: 100%;
         max-width: 450px;
 
+        @media (max-width: 600px) {
+          margin-top: 2rem;
+        }
         input {
           margin-bottom: 0.8rem;
           height: 54.59px;
@@ -44,6 +66,9 @@
           color: #ffffff;
           font-weight: 400;
 
+          @media (max-width: 600px) {
+            height: 49px;
+          }
           &::placeholder {
             color: #999999;
           }
@@ -60,9 +85,13 @@
           height: 52px;
           background: #ffffff;
           border-radius: 100px;
-
           font-size: 16px;
           font-weight: 500;
+
+          @media (max-width: 600px) {
+            margin-top: 1.5rem;
+            height: 49px;
+          }
         }
       }
     }
@@ -91,11 +120,15 @@
   }
   .footer-bottom {
     margin-top: 230px;
-    padding: 42px 64px;
+    padding: 42px 0px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
 
+    @media (max-width: 600px) {
+      margin-top: 100px;
+      padding: 24px 0rem;
+    }
     .left {
       display: flex;
       gap: 1.5rem;
@@ -103,12 +136,22 @@
       font-family: var(--font-inter);
       font-size: 14px;
       font-weight: normal;
+
+      div {
+        span {
+          display: none;
+        }
+      }
     }
 
     .sm-links {
       display: flex;
       align-items: center;
       gap: 1.5rem;
+    }
+
+    .privacy-link {
+      display: none;
     }
   }
 

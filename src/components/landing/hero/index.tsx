@@ -55,7 +55,16 @@ const Hero = () => {
         </div>
       </main>
 
+      <div className="partners-container-mobile">
+        <label htmlFor="">Trusted By</label>
 
+        <div className="partners">
+          <CngnLogo />
+          <KombatLogo />
+          <BaseLogo />
+          <ConvexityLogo />
+        </div>
+      </div>
       <video autoPlay muted loop playsInline className="hero-img">
         <source src="/images/hero-illustration-video.mp4" type="video/mp4" />
         Your browser does not support the video tag.
