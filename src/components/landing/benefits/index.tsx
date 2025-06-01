@@ -43,15 +43,6 @@ const MultchainTextItem = [
   {
     title: 'Interchange',
   },
-  {
-    title: 'Multi-chain',
-  },
-  {
-    title: 'Data',
-  },
-  {
-    title: 'Interchange',
-  },
 ];
 const Benefits: React.FC = () => {
   return (

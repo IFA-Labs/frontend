@@ -11,7 +11,7 @@
 
 @font-face {
   font-family: 'BIZ UDMincho';
-  src: url('../../public/fonts/BIZUDPMincho-Regular.ttf') ;
+  src: url('../../public/fonts/Kalice/Kalice-Trial-Regular.ttf') ;
 }
 
 
@@ -70,23 +70,17 @@ button {
   font-family: var(--font-inter);
 }
 
-.branding-only {
-  @media (max-width: 600px) {
-    display: none !important;
-  }
-}
-.guide {
+[data-testid*="reown-branding"],
+[class*="reown-branding"],
+[class*="walletconnect-branding"],
+.w3m-footer,
+.w3m-brand {
   display: none !important;
 }
 
-.guide-container {
-  display: none !important;
-}
-
-.w3m-legal-footer {
-  display: none !important;
-}
-
-.w3m-modal-container {
+/* Alternative selectors that might work */
+div[class*="powered-by"],
+div[class*="branding"],
+footer[class*="reown"] {
   display: none !important;
 }

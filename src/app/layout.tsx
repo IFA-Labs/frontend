@@ -7,6 +7,7 @@ import { headers } from 'next/headers';
 import ContextProvider from '@/lib/context';
 import { Inter, Red_Hat_Mono, Red_Hat_Text } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 export const metadata: Metadata = {
   title: 'IFA LABS',
   description: `The world's first Multi-chain stablecoin oracle`,
@@ -49,6 +50,7 @@ export default async function RootLayout({
           <TokenProvider>
             {children}
             <Analytics />
+            <SpeedInsights />
           </TokenProvider>
         </ContextProvider>
       </body>

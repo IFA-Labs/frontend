@@ -32,7 +32,6 @@
       font-size: 64px;
       line-height: 64px;
       text-align: center;
-      letter-spacing: -2.8px;
       color: #ffffff;
       overflow: hidden;
 
@@ -88,6 +87,7 @@
         align-items: center;
         cursor: pointer;
         color: rgba(255, 255, 255, 0.64);
+        font-family: 'BIZ UDMincho';
         font-size: 16px;
         font-weight: 500;
         padding: 10px 0;
@@ -117,8 +117,8 @@
       }
       .faq-button {
         background: #fff;
-        height: 24px;
-        width: 24px;
+        min-height: 24px;
+        min-width: 24px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -133,6 +133,10 @@
           width: 12px;
           height: 12px;
         }
+        @media (max-width: 600px) {
+          min-height: 20px;
+          min-width: 20px;
+        }
       }
       .faq-button:hover {
         color: #2b6cb0;
@@ -143,7 +147,7 @@
           padding: 15px;
         }
         .faq-question {
-          font-size: 16px;
+          font-size: 15px;
         }
         .faq-answer {
           font-size: 14px;

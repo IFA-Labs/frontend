@@ -23,7 +23,7 @@ const Navbar = () => {
 
   const handleMouseEnter = (
     menuSetter: React.Dispatch<React.SetStateAction<boolean>>,
-    timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>,
+    timeoutRef: React.RefObject<NodeJS.Timeout | null>,
   ) => {
     // Clear any existing timeout
     if (timeoutRef.current) {
@@ -35,9 +35,8 @@ const Navbar = () => {
 
   const handleMouseLeave = (
     menuSetter: React.Dispatch<React.SetStateAction<boolean>>,
-    timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>,
+    timeoutRef: React.RefObject<NodeJS.Timeout | null>,
   ) => {
-    // Set a timeout before closing the menu
     timeoutRef.current = setTimeout(() => {
       menuSetter(false);
     }, 100);

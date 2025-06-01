@@ -238,7 +238,8 @@
           }
 
           @media (max-width: 768px) {
-            font-size: 28px;
+            font-size: 32px;
+            letter-spacing: -1.28px;
           }
 
           .multichain-text-wrapper {
@@ -249,9 +250,12 @@
             width: fit-content;
             animation: scroll 4s ease-in-out infinite;
 
+            @media (max-width: 600px) {
+              animation: scroll 4s linear infinite;
+            }
             .multichain-text-item {
               width: 100%;
-              max-width: max-content;
+              max-width: fit-content;
             }
           }
         }

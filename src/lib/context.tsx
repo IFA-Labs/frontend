@@ -27,7 +27,6 @@ const TRUST_WALLET_ID =
 const COINBASE_WALLET_ID =
   'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa';
 
-// Create the modal with customizations
 const modal = createAppKit({
   adapters: [wagmiAdapter],
   projectId,
@@ -35,8 +34,10 @@ const modal = createAppKit({
   defaultNetwork: baseSepolia,
   metadata: metadata,
   featuredWalletIds: [META_MASK_ID, TRUST_WALLET_ID, COINBASE_WALLET_ID],
+  enableCoinbase: true,
+  coinbasePreference: 'smartWalletOnly',
   features: {
-    analytics: false,
+    analytics: true,
     swaps: false,
     onramp: true,
     connectMethodsOrder: ['wallet'],

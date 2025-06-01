@@ -1,5 +1,4 @@
 export const ERC20ABI = [
-  // Basic ERC20 functions
   {
     constant: true,
     inputs: [],
