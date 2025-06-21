@@ -27,7 +27,7 @@ const TRUST_WALLET_ID =
 const COINBASE_WALLET_ID =
   'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa';
 
-const modal = createAppKit({
+export const modal = createAppKit({
   adapters: [wagmiAdapter],
   projectId,
   networks: [base, baseSepolia, mainnet, sepolia],

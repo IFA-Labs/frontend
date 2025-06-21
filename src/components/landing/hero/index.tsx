@@ -29,7 +29,7 @@ const Hero = () => {
           </p>
 
           <Link
-            href="https://github.com/IFA-Labs/oracle_contract"
+            href="https://docs.ifalabs.com"
             target="_blank"
           >
             <button>

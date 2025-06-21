@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import '@/styles/globals.scss';
 import '@/styles/main.scss';
 import '@/styles/_variable.scss';
-import { TokenProvider } from '@/components/app/api/token-provider';
+import { TokenProvider } from '@/components/app/token-provider';
 import { headers } from 'next/headers';
 import ContextProvider from '@/lib/context';
 import { Inter, Red_Hat_Mono, Red_Hat_Text } from 'next/font/google';

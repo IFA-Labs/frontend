@@ -3,7 +3,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Logo } from '@/components/svg';
-import { HamburgerIcon, CloseIcon, MenuIcon, FaqIcon, BlogIcon } from '../svg';
+import {
+  HamburgerIcon,
+  CloseIcon,
+  MenuIcon,
+  FaqIcon,
+  BlogIcon,
+  ArrowDownIcon,
+} from '../svg';
 
 const Navbar: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,7 +46,6 @@ const Navbar: React.FC = () => {
     menuSetter: React.Dispatch<React.SetStateAction<boolean>>,
     timeoutRef: React.MutableRefObject<NodeJS.Timeout | null>,
   ) => {
-
     timeoutRef.current = setTimeout(() => {
       menuSetter(false);
     }, 100);
@@ -85,17 +91,10 @@ const Navbar: React.FC = () => {
           </Link>
 
           <ul className="nav-links">
-            <li
-              onMouseEnter={() =>
-                handleMouseEnter(setShowDevelopersMenu, developersTimeoutRef)
-              }
-              onMouseLeave={() =>
-                handleMouseLeave(setShowDevelopersMenu, developersTimeoutRef)
-              }
-              className="resources-dropdown"
-            >
-              <div className="nav-item-text">Developers</div>
-              <MenuIcon />
+            <li>
+              <Link href="https://docs.ifalabs.com" target="_blank">
+                Developers
+              </Link>
             </li>
             <li
               onMouseEnter={() =>
@@ -248,17 +247,10 @@ const Navbar: React.FC = () => {
       <div className={`mobile-nav-container ${isMenuOpen ? 'open' : ''}`}>
         <div className="mobile-nav animate-slide-up ">
           <ul className="nav-links">
-            <li
-              onMouseEnter={() =>
-                handleMouseEnter(setShowDevelopersMenu, developersTimeoutRef)
-              }
-              onMouseLeave={() =>
-                handleMouseLeave(setShowDevelopersMenu, developersTimeoutRef)
-              }
-              className="resources-dropdown"
-            >
-              <div className="nav-item-text">Developers</div>
-              <MenuIcon />
+            <li>
+              <Link href="https://docs.ifalabs.com" target="_blank">
+                Developers
+              </Link>
             </li>
             <li
               onMouseEnter={() =>
@@ -289,7 +281,7 @@ const Navbar: React.FC = () => {
               <Link href="/swap">Swap</Link>
             </li>
           </ul>
-          <Link href="/" id="join">
+          <Link href="https://docs.ifalabs.com" id="join">
             <button className="cta">Get Started</button>
           </Link>
         </div>
