@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import apiService, { TokenPrice } from '@/lib/api';
 
-export const useTokenPrices = (refreshInterval = 5000) => {
+export const useTokenPrices = (refreshInterval = 1000) => {
   const [prices, setPrices] = useState<TokenPrice[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);

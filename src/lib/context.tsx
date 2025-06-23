@@ -16,7 +16,10 @@ if (!projectId) {
 const metadata = {
   name: 'Ifa Labs',
   description: 'Ifa Labs DEX',
-  url: 'https://www.ifalabs.com/',
+  url:
+    process.env.NODE_ENV === 'production'
+      ? 'https://www.ifalabs.com/'
+      : 'http://localhost:3001',
   icons: [logoIcon],
 };
 

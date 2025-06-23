@@ -10,13 +10,35 @@ export interface Asset {
   address?: string;
 }
 
+export interface PriceChange {
+  period: string;
+  change: number;
+  change_pct: number;
+  from_price: number;
+  to_price: number;
+  from_time: string;
+  to_time: string;
+}
+
 export interface PriceResponse {
-  [key: string]: number;
+  id: string;
+  assetID: string;
+  value: number;
+  expo: number;
+  timestamp: string;
+  source: string;
+  req_hash: string;
+  req_url: string;
+  is_aggr: boolean;
+  connected_price_ids: any;
+  price_changes: PriceChange[];
 }
 
 export interface TokenPrice {
   symbol: string;
   price: number;
+  change_7d?: number;
+  change_7d_pct?: number;
   icon: string | StaticImageData;
 }
 
@@ -54,20 +76,60 @@ class ApiService {
     return asset ? asset.asset_id : null;
   }
 
-  async getLatestPrice(assetId: string): Promise<number> {
+  // Helper method to calculate the actual price from value and expo
+  private calculatePrice(value: number, expo: number): number {
+    return value * Math.pow(10, expo);
+  }
+
+  async getLatestPrice(
+    assetId: string,
+  ): Promise<{ price: number; change_7d?: number; change_7d_pct?: number }> {
     try {
+      console.log(`Fetching price for assetId: ${assetId}`);
+      console.log(`URL: ${API_BASE_URL}/prices/last?asset=${assetId}`);
+
       const response = await axios.get<PriceResponse>(
         `${API_BASE_URL}/prices/last?asset=${assetId}`,
       );
-      return response.data[assetId] || 0;
+
+      console.log('Raw API response:', response.data);
+
+      // The response is directly the price data, not wrapped in an object with assetId as key
+      const priceData = response.data;
+      if (!priceData || !priceData.value) {
+        console.warn(`No price data found for assetId: ${assetId}`);
+        return { price: 0 };
+      }
+
+      const price = this.calculatePrice(priceData.value, priceData.expo);
+      console.log(`Calculated price for ${assetId}: ${price}`);
+
+      // Extract 7-day change data if available
+      const change7d = priceData.price_changes?.find(
+        (change) => change.period === '7d',
+      );
+
+      return {
+        price,
+        change_7d: change7d?.change,
+        change_7d_pct: change7d?.change_pct,
+      };
     } catch (error) {
       console.error(`Error fetching price for asset ${assetId}:`, error);
-      throw error;
+      if (axios.isAxiosError(error)) {
+        console.error('Response status:', error.response?.status);
+        console.error('Response data:', error.response?.data);
+        console.error('Request URL:', error.config?.url);
+      }
+      // Return default values instead of throwing
+      return { price: 0 };
     }
   }
 
   async getAllTokenPrices(): Promise<TokenPrice[]> {
     const assets = await this.getAssets();
+    console.log('Available assets:', assets);
+
     const tokenSymbols = assets.map((asset) => {
       const symbol = asset.asset.split('/')[0];
       return {
@@ -77,23 +139,20 @@ class ApiService {
       };
     });
 
+    console.log('Token symbols to fetch:', tokenSymbols);
+
     const pricePromises = tokenSymbols.map(
       async ({ symbol, assetId, token }) => {
-        try {
-          const price = await this.getLatestPrice(assetId);
-          return {
-            symbol,
-            price,
-            icon: this.getTokenIcon(token),
-          };
-        } catch (error) {
-          console.error(`Error fetching price for ${symbol}:`, error);
-          return {
-            symbol,
-            price: 0,
-            icon: this.getTokenIcon(token),
-          };
-        }
+        const { price, change_7d, change_7d_pct } = await this.getLatestPrice(
+          assetId,
+        );
+        return {
+          symbol,
+          price,
+          change_7d,
+          change_7d_pct,
+          icon: this.getTokenIcon(token),
+        };
       },
     );
 
@@ -101,7 +160,7 @@ class ApiService {
   }
 
   private getTokenIcon(token: string): StaticImageData {
-    // Get icon from the tokenList
+   
     return tokenList[token]?.icon || '/images/tokens/eth.svg';
   }
 
@@ -118,8 +177,8 @@ class ApiService {
         return null;
       }
 
-      const fromPrice = await this.getLatestPrice(fromAssetId);
-      const toPrice = await this.getLatestPrice(toAssetId);
+      const { price: fromPrice } = await this.getLatestPrice(fromAssetId);
+      const { price: toPrice } = await this.getLatestPrice(toAssetId);
 
       // Calculate the exchange rate (fromToken to toToken)
       if (toPrice === 0) return null;

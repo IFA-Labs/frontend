@@ -1,6 +1,7 @@
 import CNGNIcon from '../../public/images/tokens/cngn.svg';
 import ETHIcon from '../../public/images/tokens/eth.svg';
 import USDTIcon from '../../public/images/tokens/usdt.svg';
+import BRZIcon from '../../public/images/tokens/BRZ.svg';
 import { StaticImageData } from 'next/image';
 export interface TokenInfo {
   icon: StaticImageData;
@@ -24,6 +25,13 @@ export const tokenList: { [key: string]: TokenInfo } = {
     icon: CNGNIcon,
     name: 'CNGN',
     symbol: 'CNGN',
+    address: '',
+    decimals: 18,
+  },
+  BRZ: {
+    icon: BRZIcon,
+    name: 'BRZ',
+    symbol: 'BRZ',
     address: '',
     decimals: 18,
   },

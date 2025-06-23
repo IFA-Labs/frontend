@@ -80,11 +80,22 @@
       }
 
       .change {
-        font-family: var(--font-red-hat-text);
-        color: #00ff99;
-        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+        font-family: 'Red Hat Mono', monospace;
+        font-size: 12px;
 
-        @media (max-width: 768px) {
+        &.positive {
+          color: #00e676;
+        }
+
+        &.negative {
+          color: #ff5252;
+        }
+
+        .change-arrow {
           font-size: 12px;
         }
       }
