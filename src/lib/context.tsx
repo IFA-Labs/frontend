@@ -18,7 +18,7 @@ const metadata = {
   description: 'Ifa Labs DEX',
   url:
     process.env.NODE_ENV === 'production'
-      ? 'https://www.ifalabs.com/'
+      ? 'https://www.ifalabs.com'
       : 'http://localhost:3001',
   icons: [logoIcon],
 };
