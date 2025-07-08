@@ -44,6 +44,7 @@
       color: #ffffff;
       overflow: hidden;
       text-align: center;
+      overflow: hidden;
 
       @media (max-width: 600px) {
         font-size: 36px;
@@ -52,6 +53,7 @@
 
       span {
         color: #696969;
+        overflow: hidden;
       }
     }
 
@@ -284,7 +286,6 @@
       font-size: 18px;
       line-height: normal;
       cursor: pointer;
-
     }
   }
 }
@@ -293,12 +294,14 @@
   display: inline-block;
   white-space: pre;
   transition: opacity 0.2s ease;
+  overflow: hidden;
 }
 
 .cursor {
   display: inline-block;
   animation: blink 0.7s infinite;
   margin-left: -0.15em;
+  overflow: hidden;
 }
 
 @keyframes blink {
