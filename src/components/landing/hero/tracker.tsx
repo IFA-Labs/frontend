@@ -15,7 +15,43 @@ interface CryptoData {
 }
 
 const CryptoTracker: React.FC = () => {
-  const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
+  const [cryptoData, setCryptoData] = useState<CryptoData[]>([
+    {
+      symbol: 'CNGN/USD',
+      price: 0,
+      change: 0,
+      changePct: 0,
+      icon: '/images/icons/cngn.svg',
+    },
+    {
+      symbol: 'BRZ/USD',
+      price: 0,
+      change: 0,
+      changePct: 0,
+      icon: '/images/icons/BRZ.svg',
+    },
+    {
+      symbol: 'ETH/USD',
+      price: 0,
+      change: 0,
+      changePct: 0,
+      icon: '/images/icons/eth.svg',
+    },
+    {
+      symbol: 'USDC/USD',
+      price: 0,
+      change: 0,
+      changePct: 0,
+      icon: '/images/icons/usdc.svg',
+    },
+    {
+      symbol: 'USDT/USD',
+      price: 0,
+      change: 0,
+      changePct: 0,
+      icon: '/images/icons/usdt.svg',
+    },
+  ]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
