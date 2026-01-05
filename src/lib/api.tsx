@@ -2,7 +2,7 @@ import axios from 'axios';
 import { tokenList } from '@/lib/tokens';
 import { StaticImageData } from 'next/image';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://api.ifalabs.com/api';
 
 export interface Asset {
   asset_id: string;
@@ -159,7 +159,7 @@ class ApiService {
     return Promise.all(pricePromises);
   }
 
-  private getTokenIcon(token: string): StaticImageData {
+  private getTokenIcon(token: string): string | StaticImageData {
    
     return tokenList[token]?.icon || '/images/tokens/eth.svg';
   }

@@ -19,8 +19,8 @@ const Calculator = () => {
     'pay',
   );
   const [tokens, setTokens] = useState<{ pay: TokenInfo; receive: TokenInfo }>({
-    pay: tokenList.ETH,
-    receive: tokenList.USDT,
+    pay: tokenList.CNGN,
+    receive: tokenList.USDC,
   });
   const [amounts, setAmounts] = useState({ pay: '', receive: '' });
   const { rate: exchangeRate, loading } = useExchangeRate(

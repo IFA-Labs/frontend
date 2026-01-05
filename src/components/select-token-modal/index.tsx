@@ -4,6 +4,32 @@ import { tokenList, TokenInfo } from '@/lib/tokens';
 import { SearchIcon } from '@/components/svg';
 import Image from 'next/image';
 
+// Tokens that should appear first, in this order
+const PRIORITIZED_SYMBOLS = ['CNGN', 'BRZ', 'USDC', 'USDT', 'ETH'];
+
+const sortTokens = (
+  a: { symbol?: string; name?: string; order?: number },
+  b: { symbol?: string; name?: string; order?: number },
+) => {
+  const aSym = (a.symbol || a.name || '').toUpperCase();
+  const bSym = (b.symbol || b.name || '').toUpperCase();
+
+  const aIndex = PRIORITIZED_SYMBOLS.indexOf(aSym);
+  const bIndex = PRIORITIZED_SYMBOLS.indexOf(bSym);
+
+  if (aIndex !== -1 || bIndex !== -1) {
+    if (aIndex === -1) return 1; // b is prioritized
+    if (bIndex === -1) return -1; // a is prioritized
+    return aIndex - bIndex; // both prioritized, order by priority list
+  }
+
+  const aOrder = a.order ?? 9999;
+  const bOrder = b.order ?? 9999;
+  if (aOrder !== bOrder) return aOrder - bOrder;
+
+  return (a.name || a.symbol || '').localeCompare(b.name || b.symbol || '');
+};
+
 interface SelectTokenModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -21,14 +47,19 @@ const SelectTokenModal: FC<SelectTokenModalProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTokens, setFilteredTokens] = useState<TokenInfo[]>(
-    availableTokens ? availableTokens : Object.values(tokenList),
+    // initialize sorted: tokens with explicit `order` show first, then alphabetical
+    (availableTokens ? availableTokens : Object.values(tokenList))
+      .slice()
+      .sort(sortTokens),
   );
 
   useEffect(() => {
     if (isOpen) {
       setSearchQuery('');
       setFilteredTokens(
-        availableTokens ? availableTokens : Object.values(tokenList),
+        (availableTokens ? availableTokens : Object.values(tokenList))
+          .slice()
+          .sort(sortTokens),
       );
     }
   }, [isOpen, availableTokens]);
@@ -37,7 +68,11 @@ const SelectTokenModal: FC<SelectTokenModalProps> = ({
     const tokens = availableTokens ? availableTokens : Object.values(tokenList);
 
     if (searchQuery.trim() === '') {
-      setFilteredTokens(tokens);
+      setFilteredTokens(
+        tokens.slice().sort((a, b) => {
+          return sortTokens(a, b);
+        }),
+      );
       return;
     }
 
@@ -47,7 +82,7 @@ const SelectTokenModal: FC<SelectTokenModalProps> = ({
       return searchBy.toLowerCase().includes(query);
     });
 
-    setFilteredTokens(filtered);
+    setFilteredTokens(filtered.slice().sort(sortTokens));
   }, [searchQuery, availableTokens]);
 
   if (!isOpen) return null;

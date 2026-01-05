@@ -2,29 +2,25 @@ import CNGNIcon from '../../public/images/tokens/cngn.svg';
 import ETHIcon from '../../public/images/tokens/eth.svg';
 import USDTIcon from '../../public/images/tokens/usdt.svg';
 import BRZIcon from '../../public/images/tokens/BRZ.svg';
+import USDCIcon from '../../public/images/tokens/usdc.svg';
 import { StaticImageData } from 'next/image';
 export interface TokenInfo {
-  icon: StaticImageData;
+  icon: StaticImageData | string;
   name: string;
   symbol: string;
+  /** optional numeric sort order (lower shows first) */
+  order?: number;
   address: string;
   decimals: number;
   assetId?: string;
 }
 
 export const tokenList: { [key: string]: TokenInfo } = {
-  ETH: { icon: ETHIcon, name: 'ETH', symbol: 'ETH', address: '', decimals: 18 },
-  USDT: {
-    icon: USDTIcon,
-    name: 'USDT',
-    symbol: 'USDT',
-    address: '',
-    decimals: 6,
-  },
   CNGN: {
     icon: CNGNIcon,
     name: 'CNGN',
     symbol: 'CNGN',
+    order: 1,
     address: '',
     decimals: 18,
   },
@@ -32,17 +28,34 @@ export const tokenList: { [key: string]: TokenInfo } = {
     icon: BRZIcon,
     name: 'BRZ',
     symbol: 'BRZ',
+    order: 2,
     address: '',
     decimals: 18,
   },
-  // WETH: {
-  //   symbol: 'WETH',
-  //   name: 'Wrapped ETH',
-  //   decimals: 18,
-  //   address: '0xdd13E55209Fd76AfE204dBda4007C227904f0a81',
-  //   icon: ETHIcon,
-  //   assetId: 'WETH/USDT',
-  // },
+  USDC: {
+    icon: USDCIcon,
+    name: 'USDC',
+    symbol: 'USDC',
+    order: 3,
+    address: '',
+    decimals: 6,
+  },
+  USDT: {
+    icon: USDTIcon,
+    name: 'USDT',
+    symbol: 'USDT',
+    order: 4,
+    address: '',
+    decimals: 6,
+  },
+  ETH: {
+    icon: ETHIcon,
+    name: 'ETH',
+    symbol: 'ETH',
+    order: 5,
+    address: '',
+    decimals: 6,
+  },
 };
 
 export const getTokenFromSymbol = (symbol: string): TokenInfo | null => {

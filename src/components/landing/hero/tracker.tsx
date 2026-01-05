@@ -15,36 +15,7 @@ interface CryptoData {
 }
 
 const CryptoTracker: React.FC = () => {
-  const [cryptoData, setCryptoData] = useState<CryptoData[]>([
-    {
-      symbol: 'ETH/USD',
-      price: 0,
-      change: 0,
-      changePct: 0,
-      icon: '/images/icons/eth.svg',
-    },
-    {
-      symbol: 'USDT/USD',
-      price: 0,
-      change: 0,
-      changePct: 0,
-      icon: '/images/icons/usdt.svg',
-    },
-    {
-      symbol: 'CNGN/USD',
-      price: 0,
-      change: 0,
-      changePct: 0,
-      icon: '/images/icons/cngn.svg',
-    },
-    {
-      symbol: 'BRZ/USD',
-      price: 0,
-      change: 0,
-      changePct: 0,
-      icon: '/images/icons/BRZ.svg',
-    },
-  ]);
+  const [cryptoData, setCryptoData] = useState<CryptoData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -58,6 +29,19 @@ const CryptoTracker: React.FC = () => {
           changePct: item.change_7d_pct || 0,
           icon: item.icon,
         })) as CryptoData[];
+        const PRIORITIZED = ['CNGN', 'BRZ', 'USDC', 'USDT', 'ETH'];
+        updatedData.sort((a, b) => {
+          const aSym = (a.symbol || '').toUpperCase();
+          const bSym = (b.symbol || '').toUpperCase();
+          const aIdx = PRIORITIZED.indexOf(aSym);
+          const bIdx = PRIORITIZED.indexOf(bSym);
+          if (aIdx !== -1 || bIdx !== -1) {
+            if (aIdx === -1) return 1;
+            if (bIdx === -1) return -1;
+            return aIdx - bIdx;
+          }
+          return aSym.localeCompare(bSym);
+        });
 
         setCryptoData(updatedData);
       } catch (error) {
