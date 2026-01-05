@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'api.ifalabs.com/api/:path*',
+        destination: 'https://api.ifalabs.com/api/:path*',
       },
     ];
   },
