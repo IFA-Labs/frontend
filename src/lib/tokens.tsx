@@ -8,7 +8,6 @@ export interface TokenInfo {
   icon: StaticImageData | string;
   name: string;
   symbol: string;
-  /** optional numeric sort order (lower shows first) */
   order?: number;
   address: string;
   decimals: number;

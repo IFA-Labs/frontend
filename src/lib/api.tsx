@@ -2,7 +2,9 @@ import axios from 'axios';
 import { tokenList } from '@/lib/tokens';
 import { StaticImageData } from 'next/image';
 
-const API_BASE_URL = 'http://api.ifalabs.com/api';
+// Use environment variable in production; default to secure HTTPS API URL
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export interface Asset {
   asset_id: string;
@@ -160,7 +162,6 @@ class ApiService {
   }
 
   private getTokenIcon(token: string): string | StaticImageData {
-   
     return tokenList[token]?.icon || '/images/tokens/eth.svg';
   }
 
