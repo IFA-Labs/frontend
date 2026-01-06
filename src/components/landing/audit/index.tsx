@@ -213,7 +213,8 @@ const Audit = () => {
               onClick={handleDownload}
               className="download-btn"
               disabled={isDownloading}
-              aria-busy={isDownloading}
+              aria-busy={isDownloading ? 'true' : 'false'}
+              title="download"
             >
               {isDownloading
                 ? 'Downloading...'
