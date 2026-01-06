@@ -5,6 +5,7 @@ import StatsSection from '@/components/landing/stats';
 import Benefits from '@/components/landing/benefits';
 import BlogSection from '@/components/landing/blog';
 import StartBuilding from '@/components/start-building';
+import Audit from '@/components/landing/audit';
 import Footer from '@/components/footer';
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
       <StatsSection />
       <Benefits />
       <BlogSection />
+      <Audit />
       <StartBuilding />
       <Footer />
     </div>

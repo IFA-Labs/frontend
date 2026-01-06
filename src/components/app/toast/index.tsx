@@ -46,7 +46,6 @@ interface ToastContextType {
   updateToast: (id: string, params: Partial<Omit<Toast, 'id'>>) => void;
 }
 
-// Create context with default values
 export const ToastContext = createContext<ToastContextType>({
   showToast: () => '',
   hideToast: () => {},
@@ -54,7 +53,6 @@ export const ToastContext = createContext<ToastContextType>({
   updateToast: () => {},
 });
 
-// Provider props
 interface ToastProviderProps {
   children: ReactNode;
   maxToasts?: number;
@@ -72,9 +70,21 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
 }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  // Show toast function
   const showToast = (params: Omit<Toast, 'id'>): string => {
-    const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    let randHex = '';
+    if (
+      typeof crypto !== 'undefined' &&
+      typeof crypto.getRandomValues === 'function'
+    ) {
+      const arr = new Uint8Array(8);
+      crypto.getRandomValues(arr);
+      randHex = Array.from(arr)
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+    } else {
+      randHex = Math.random().toString(36).substring(2, 11);
+    }
+    const id = `toast-${Date.now()}-${randHex}`;
     const newToast: Toast = {
       id,
       duration: defaultDuration,
@@ -82,7 +92,6 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
     };
 
     setToasts((prev) => {
-      // If we're at max capacity, remove the oldest toast
       if (prev.length >= maxToasts) {
         return [...prev.slice(1), newToast];
       }
@@ -92,17 +101,14 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
     return id;
   };
 
-  // Hide toast function
   const hideToast = (id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
-  // Clear all toasts function
   const clearToasts = () => {
     setToasts([]);
   };
 
-  // Update existing toast
   const updateToast = (id: string, params: Partial<Omit<Toast, 'id'>>) => {
     setToasts((prev) =>
       prev.map((toast) => (toast.id === id ? { ...toast, ...params } : toast)),
@@ -124,7 +130,6 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({
   );
 };
 
-// Toast container component
 interface ToastContainerProps {
   toasts: Toast[];
   hideToast: (id: string) => void;

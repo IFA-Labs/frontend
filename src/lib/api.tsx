@@ -4,7 +4,7 @@ import { StaticImageData } from 'next/image';
 
 // Use environment variable in production; default to secure HTTPS API URL
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL;
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.ifalabs.com/api';
 
 export interface Asset {
   asset_id: string;
@@ -159,6 +159,24 @@ class ApiService {
     );
 
     return Promise.all(pricePromises);
+  }
+
+  /**
+   * Fetch audit price data between two ISO timestamps. Optionally filter by assetId.
+   */
+  async getAuditPrices(fromISO: string, toISO: string, assetId?: string) {
+    try {
+      const url = `${API_BASE_URL}/prices/audit?from=${encodeURIComponent(
+        fromISO,
+      )}&to=${encodeURIComponent(toISO)}${
+        assetId ? `&asset=${encodeURIComponent(assetId)}` : ''
+      }`;
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching audit prices:', error);
+      throw error;
+    }
   }
 
   private getTokenIcon(token: string): string | StaticImageData {
