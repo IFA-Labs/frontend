@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import useTokenPrices from '@/hooks/useTokenPrices';
+import { usePrices } from '@/contexts/PriceContext';
 import { TokenPrice } from '@/lib/api';
 
 interface TokenContextType {
@@ -20,14 +20,10 @@ export const useTokenContext = () => useContext(TokenContext);
 
 interface TokenProviderProps {
   children: ReactNode;
-  refreshInterval?: number;
 }
 
-export const TokenProvider: React.FC<TokenProviderProps> = ({
-  children,
-  refreshInterval = 30000,
-}) => {
-  const { prices, loading, error } = useTokenPrices(refreshInterval);
+export const TokenProvider: React.FC<TokenProviderProps> = ({ children }) => {
+  const { prices, loading, error } = usePrices();
 
   return (
     <TokenContext.Provider value={{ prices, loading, error }}>
