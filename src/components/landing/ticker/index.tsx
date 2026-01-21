@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import apiService, { TokenPrice } from '@/lib/api';
+import { usePrices } from '@/contexts/PriceContext';
 
 interface TickerData {
   symbol: string;
@@ -11,34 +11,20 @@ interface TickerData {
 }
 
 export default function CryptoTicker() {
+  const { prices, loading } = usePrices();
   const [tickerData, setTickerData] = useState<TickerData[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTickerData = async () => {
-      try {
-        const prices = await apiService.getAllTokenPrices();
-
-        const updatedData = prices.map((item) => ({
-          symbol: item.symbol,
-          price: item.price,
-          change7d: item.change_7d || 0,
-          change7dPct: item.change_7d_pct || 0,
-        }));
-
-        setTickerData(updatedData);
-      } catch (error) {
-        console.error('Error fetching ticker prices:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTickerData();
-    const interval = setInterval(fetchTickerData, 10000);
-
-    return () => clearInterval(interval);
-  }, []);
+    if (prices.length > 0) {
+      const updatedData = prices.map((item) => ({
+        symbol: item.symbol,
+        price: item.price,
+        change7d: item.change_7d || 0,
+        change7dPct: item.change_7d_pct || 0,
+      }));
+      setTickerData(updatedData);
+    }
+  }, [prices]);
 
   const tickerItems = [
     ...tickerData,

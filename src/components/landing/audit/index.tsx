@@ -20,6 +20,8 @@ const Audit = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [startDateFocused, setStartDateFocused] = useState(false);
+  const [endDateFocused, setEndDateFocused] = useState(false);
 
   useEffect(() => {
     const fetchAssets = async () => {
@@ -38,7 +40,6 @@ const Audit = () => {
         setDisplayAssets(mapped);
         setError(null);
       } catch (err) {
-        console.error('Error fetching assets:', err);
         setError('Failed to load assets. Please try again later.');
       } finally {
         setLoading(false);
@@ -79,8 +80,7 @@ const Audit = () => {
         setDownloadSuccess(true);
         setTimeout(() => setDownloadSuccess(false), 3000);
       } catch (err) {
-        console.error('Failed to fetch audit data', err);
-        alert('Failed to download audit report. See console for details.');
+        alert('Failed to download audit report. Please try again.');
       } finally {
         setIsDownloading(false);
       }
@@ -107,6 +107,7 @@ const Audit = () => {
           <div className="request-fields">
             <div className="asset-select">
               <button
+                type="button"
                 onClick={() => setShowAssetDropdown(!showAssetDropdown)}
                 className="select-toggle"
                 disabled={loading}
@@ -117,8 +118,8 @@ const Audit = () => {
                   {loading
                     ? 'Loading assets...'
                     : error
-                    ? 'Error loading assets'
-                    : selectedAsset || 'Choose asset'}
+                      ? 'Error loading assets'
+                      : selectedAsset || 'Choose asset'}
                 </span>
                 <svg
                   className="toggle-icon"
@@ -143,6 +144,7 @@ const Audit = () => {
                           '/images/tokens/eth.svg';
                     return (
                       <button
+                        type="button"
                         key={a.asset_id || index}
                         onClick={() => {
                           setSelectedAsset(a.asset);
@@ -174,42 +176,61 @@ const Audit = () => {
             </div>
 
             <div className="date-field">
-              <div className="input-wrapper">
-                {!startDate && <span className="placeholder">Start date</span>}
+              <div
+                className="input-wrapper"
+                onClick={() => setStartDateFocused(true)}
+              >
+                {!startDate && !startDateFocused && (
+                  <span className="placeholder">Start date</span>
+                )}
                 <input
-                  type="text"
+                  type="date"
                   aria-label="Start date"
                   value={startDate}
-                  onFocus={(e) => (e.target.type = 'date')}
+                  onFocus={() => setStartDateFocused(true)}
                   onBlur={(e) => {
-                    if (!e.target.value) e.target.type = 'text';
+                    if (!startDate) {
+                      setStartDateFocused(false);
+                    }
                   }}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="date-input"
+                  onChange={(e) => {
+                    setStartDate(e.target.value);
+                  }}
+                  className={`date-input ${startDate ? 'has-value' : ''}`}
                 />
                 <CalendarIcon />
               </div>
             </div>
 
             <div className="date-field">
-              <div className="input-wrapper">
-                {!endDate && <span className="placeholder">End date</span>}
+              <div
+                className="input-wrapper"
+                onClick={() => setEndDateFocused(true)}
+              >
+                {!endDate && !endDateFocused && (
+                  <span className="placeholder">End date</span>
+                )}
                 <input
-                  type="text"
+                  type="date"
                   aria-label="End date"
                   value={endDate}
-                  onFocus={(e) => (e.target.type = 'date')}
+                  onFocus={() => setEndDateFocused(true)}
                   onBlur={(e) => {
-                    if (!e.target.value) e.target.type = 'text';
+                    if (!endDate) {
+                      setEndDateFocused(false);
+                    }
                   }}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="date-input"
+                  onChange={(e) => {
+                    setEndDate(e.target.value);
+                  }}
+                  className={`date-input ${endDate ? 'has-value' : ''}`}
                 />
                 <CalendarIcon />
               </div>
             </div>
 
             <button
+              type="button"
               onClick={handleDownload}
               className="download-btn"
               disabled={isDownloading}
@@ -219,8 +240,8 @@ const Audit = () => {
               {isDownloading
                 ? 'Downloading...'
                 : downloadSuccess
-                ? 'Downloaded'
-                : 'Download full report'}
+                  ? 'Downloaded'
+                  : 'Download full report'}
             </button>
           </div>
         </div>
@@ -230,3 +251,5 @@ const Audit = () => {
 };
 
 export default Audit;
+// 3223871992
+// firstbank

@@ -71,7 +71,7 @@ export function SwapCTAButton({
         duration: 5000,
         actionLabel: 'View Transaction',
         onAction: () => {
-          console.log('View transaction clicked');
+          // Handle transaction view
         },
       });
 
@@ -97,10 +97,6 @@ export function SwapCTAButton({
       onConnectWalletClick();
     } else if (appKit?.open) {
       appKit.open();
-    } else {
-      console.error(
-        'Reown AppKit modal control is not available. Ensure ContextProvider is set up.',
-      );
     }
   };
 

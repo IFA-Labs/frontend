@@ -31,10 +31,6 @@ export function ConnectWallet() {
   const handleConnectClick = () => {
     if (appKit?.open) {
       appKit.open();
-    } else {
-      console.error(
-        'AppKit modal control is not available. Ensure ContextProvider is set up.',
-      );
     }
   };
 

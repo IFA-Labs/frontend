@@ -47,6 +47,19 @@ export interface TokenPrice {
 class ApiService {
   private static instance: ApiService;
   private assetCache: Asset[] | null = null;
+  private priceCache: Map<
+    string,
+    {
+      price: number;
+      change_7d?: number;
+      change_7d_pct?: number;
+      timestamp: number;
+    }
+  > = new Map();
+  private allPricesCache: { data: TokenPrice[]; timestamp: number } | null =
+    null;
+  private readonly PRICE_CACHE_TTL = 5000;
+  private readonly ALL_PRICES_CACHE_TTL = 10000;
 
   private constructor() {}
 
@@ -67,7 +80,6 @@ class ApiService {
       this.assetCache = response.data;
       return response.data;
     } catch (error) {
-      console.error('Error fetching assets:', error);
       throw error;
     }
   }
@@ -78,7 +90,6 @@ class ApiService {
     return asset ? asset.asset_id : null;
   }
 
-  // Helper method to calculate the actual price from value and expo
   private calculatePrice(value: number, expo: number): number {
     return value * Math.pow(10, expo);
   }
@@ -86,51 +97,57 @@ class ApiService {
   async getLatestPrice(
     assetId: string,
   ): Promise<{ price: number; change_7d?: number; change_7d_pct?: number }> {
-    try {
-      console.log(`Fetching price for assetId: ${assetId}`);
-      console.log(`URL: ${API_BASE_URL}/prices/last?asset=${assetId}`);
+    const cached = this.priceCache.get(assetId);
+    if (cached && Date.now() - cached.timestamp < this.PRICE_CACHE_TTL) {
+      return {
+        price: cached.price,
+        change_7d: cached.change_7d,
+        change_7d_pct: cached.change_7d_pct,
+      };
+    }
 
+    try {
       const response = await axios.get<PriceResponse>(
         `${API_BASE_URL}/prices/last?asset=${assetId}`,
       );
 
-      console.log('Raw API response:', response.data);
-
-      // The response is directly the price data, not wrapped in an object with assetId as key
       const priceData = response.data;
       if (!priceData || !priceData.value) {
-        console.warn(`No price data found for assetId: ${assetId}`);
         return { price: 0 };
       }
 
       const price = this.calculatePrice(priceData.value, priceData.expo);
-      console.log(`Calculated price for ${assetId}: ${price}`);
 
-      // Extract 7-day change data if available
       const change7d = priceData.price_changes?.find(
         (change) => change.period === '7d',
       );
 
-      return {
+      const result = {
         price,
         change_7d: change7d?.change,
         change_7d_pct: change7d?.change_pct,
       };
+
+      this.priceCache.set(assetId, {
+        ...result,
+        timestamp: Date.now(),
+      });
+
+      return result;
     } catch (error) {
-      console.error(`Error fetching price for asset ${assetId}:`, error);
-      if (axios.isAxiosError(error)) {
-        console.error('Response status:', error.response?.status);
-        console.error('Response data:', error.response?.data);
-        console.error('Request URL:', error.config?.url);
-      }
-      // Return default values instead of throwing
       return { price: 0 };
     }
   }
 
   async getAllTokenPrices(): Promise<TokenPrice[]> {
+    if (
+      this.allPricesCache &&
+      Date.now() - this.allPricesCache.timestamp < this.ALL_PRICES_CACHE_TTL
+    ) {
+      return this.allPricesCache.data;
+    }
+
     const assets = await this.getAssets();
-    console.log('Available assets:', assets);
 
     const tokenSymbols = assets.map((asset) => {
       const symbol = asset.asset.split('/')[0];
@@ -141,13 +158,10 @@ class ApiService {
       };
     });
 
-    console.log('Token symbols to fetch:', tokenSymbols);
-
     const pricePromises = tokenSymbols.map(
       async ({ symbol, assetId, token }) => {
-        const { price, change_7d, change_7d_pct } = await this.getLatestPrice(
-          assetId,
-        );
+        const { price, change_7d, change_7d_pct } =
+          await this.getLatestPrice(assetId);
         return {
           symbol,
           price,
@@ -158,12 +172,16 @@ class ApiService {
       },
     );
 
-    return Promise.all(pricePromises);
+    const result = await Promise.all(pricePromises);
+
+    this.allPricesCache = {
+      data: result,
+      timestamp: Date.now(),
+    };
+
+    return result;
   }
 
-  /**
-   * Fetch audit price data between two ISO timestamps. Optionally filter by assetId.
-   */
   async getAuditPrices(fromISO: string, toISO: string, assetId?: string) {
     try {
       const url = `${API_BASE_URL}/prices/audit?from=${encodeURIComponent(
@@ -174,7 +192,6 @@ class ApiService {
       const response = await axios.get(url);
       return response.data;
     } catch (error) {
-      console.error('Error fetching audit prices:', error);
       throw error;
     }
   }
@@ -183,7 +200,6 @@ class ApiService {
     return tokenList[token]?.icon || '/images/tokens/eth.svg';
   }
 
-  // Helper method to get price for specific token pair
   async getPriceForPair(
     fromToken: string,
     toToken: string,
@@ -199,14 +215,9 @@ class ApiService {
       const { price: fromPrice } = await this.getLatestPrice(fromAssetId);
       const { price: toPrice } = await this.getLatestPrice(toAssetId);
 
-      // Calculate the exchange rate (fromToken to toToken)
       if (toPrice === 0) return null;
       return fromPrice / toPrice;
     } catch (error) {
-      console.error(
-        `Error calculating price for ${fromToken}/${toToken}:`,
-        error,
-      );
       return null;
     }
   }

@@ -245,15 +245,6 @@ export function useSwapExecution({
       args = [amountIn, minAmountOut, path, recipient, BigInt(deadline)];
     }
 
-    console.log('Swap Params:', {
-      functionName,
-      from: fromToken.symbol,
-      to: toToken.symbol,
-      amountIn: amountIn.toString(),
-      minAmountOut: minAmountOut.toString(),
-      path,
-    });
-
     writeContract({
       address: SWAP_ROUTER_ADDRESS as `0x${string}`,
       abi: SWAP_ABI,

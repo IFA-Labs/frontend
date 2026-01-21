@@ -228,15 +228,18 @@
           color: #999999;
           font-size: 14px;
           pointer-events: none;
-
-          &.focused {
-            display: none;
-          }
+          transition: opacity 0.2s ease;
 
           @media (max-width: 600px) {
             left: 1.5rem;
             font-size: 14px;
           }
+        }
+
+        // Hide placeholder when date input is focused or being interacted with
+        .date-input:focus ~ .placeholder,
+        .date-input:not([value='']) ~ .placeholder {
+          opacity: 0;
         }
 
         .date-input {
@@ -246,32 +249,48 @@
           border-radius: 9999px;
           padding: 18px 1.5rem;
           font-size: 14px;
-          color: #fff;
+          color: transparent; // Keep input text transparent by default
           transition: border-color 0.3s ease;
           cursor: pointer;
 
-          // color-scheme: light;
+          // Completely hide all date format text by default
+          &::-webkit-datetime-edit,
+          &::-webkit-datetime-edit-text,
+          &::-webkit-datetime-edit-month-field,
+          &::-webkit-datetime-edit-day-field,
+          &::-webkit-datetime-edit-year-field {
+            color: transparent !important;
+          }
 
-          // &:invalid {
-          //   &::-webkit-datetime-edit {
-          //     color: transparent;
-          //   }
-          // }
+          // Keep transparent even when focused/active
+          &:focus::-webkit-datetime-edit,
+          &:focus::-webkit-datetime-edit-text,
+          &:focus::-webkit-datetime-edit-month-field,
+          &:focus::-webkit-datetime-edit-day-field,
+          &:focus::-webkit-datetime-edit-year-field,
+          &:active::-webkit-datetime-edit,
+          &:active::-webkit-datetime-edit-text,
+          &:active::-webkit-datetime-edit-month-field,
+          &:active::-webkit-datetime-edit-day-field,
+          &:active::-webkit-datetime-edit-year-field {
+            color: transparent !important;
+          }
 
-          // &::-webkit-datetime-edit {
-          //   color: #fff;
-          // }
-
-          // &[type='text'] {
-          //   color: transparent;
-          // }
-
-          &[type='text']:focus {
+          // Only show when has-value class is present
+          &.has-value {
             color: #fff;
+
+            &::-webkit-datetime-edit,
+            &::-webkit-datetime-edit-text,
+            &::-webkit-datetime-edit-month-field,
+            &::-webkit-datetime-edit-day-field,
+            &::-webkit-datetime-edit-year-field {
+              color: #fff !important;
+            }
           }
 
           &::placeholder {
-            color: #fff;
+            color: #999999;
           }
 
           &:hover {
@@ -290,12 +309,6 @@
             cursor: pointer;
             width: 1.5rem;
             height: 1.5rem;
-          }
-
-          &:not([value='']) {
-            ~ .placeholder {
-              display: none;
-            }
           }
 
           @media (max-width: 600px) {

@@ -30,10 +30,6 @@ export const useExchangeRate = (
       setRate(exchangeRate);
       setError(null);
     } catch (err) {
-      console.error(
-        `Error fetching exchange rate for ${fromToken}/${toToken}:`,
-        err,
-      );
       setError(
         err instanceof Error
           ? err

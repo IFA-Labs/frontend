@@ -17,6 +17,7 @@ import {
   getDeadlineTimestamp,
 } from '@/lib/SwapIntegration';
 import { useToast } from '@/hooks/useToast';
+import { usePrices } from '@/contexts/PriceContext';
 
 interface TokenDisplay {
   icon: string | StaticImageData;
@@ -197,37 +198,27 @@ const Swap = () => {
           }));
         }
       } catch (error) {
-        console.error('Error fetching available tokens:', error);
+        // Silently handle error
       }
     };
 
     fetchAvailableTokens();
   }, []);
 
-  // Fetch token prices
+  // Use centralized price context
+  const { prices: contextPrices } = usePrices();
+
+  // Update token prices from context
   useEffect(() => {
-    const fetchPrices = async () => {
-      try {
-        const prices = await apiService.getAllTokenPrices();
-        const priceMap: Record<string, number> = {};
-
-        prices.forEach((item) => {
-          const symbol = item.symbol.split('/')[0];
-          priceMap[symbol] = item.price;
-        });
-
-        setTokenPrices(priceMap);
-      } catch (error) {
-        console.error('Error fetching token prices:', error);
-      }
-    };
-
-    fetchPrices();
-    // Set up regular price updates
-    const interval = setInterval(fetchPrices, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+    if (contextPrices.length > 0) {
+      const priceMap: Record<string, number> = {};
+      contextPrices.forEach((item) => {
+        const symbol = item.symbol.split('/')[0];
+        priceMap[symbol] = item.price;
+      });
+      setTokenPrices(priceMap);
+    }
+  }, [contextPrices]);
 
   // Use the exchange rate hook
   const { rate: exchangeRate, loading: rateLoading } = useExchangeRate(
@@ -407,7 +398,6 @@ const Swap = () => {
 
         setSwapProceedDetails({ canProceed: true, message: 'Swap' });
       } catch (error) {
-        console.error('Error during swap checks:', error);
         setSwapProceedDetails({
           canProceed: false,
           message: 'Error during checks',
@@ -536,47 +526,21 @@ const Swap = () => {
 
   const executeTransaction = () => {
     try {
-      console.log('Execute transaction called', {
-        isApproved,
-        action: isApproved ? 'swap' : 'approve',
-        fromToken: fromToken?.symbol,
-        toToken: toToken?.symbol,
-        fromAmount,
-      });
-
       if (!isApproved && fromToken?.symbol !== 'ETH') {
-        console.log('Calling approve function...');
         // Make sure we're dealing with a token that needs approval (not ETH)
         if (fromToken?.address && fromToken.address !== NATIVE_TOKEN_ADDRESS) {
-          // Log the parameters being sent
-          console.log('Approval params:', {
-            tokenAddress: fromToken.address,
-            walletAddress: address,
-            amount: fromAmount,
-            decimals: fromToken.decimals,
-          });
-
           // Call approve directly without await - this is important for the wallet to trigger
           if (approve) {
             approve();
-            console.log('Approve function called successfully');
-          } else {
-            console.error('Approve function is not available');
           }
-        } else {
-          console.error('Cannot approve: invalid token address or native ETH');
         }
       } else {
-        console.log('Calling executeSwap function...');
         if (executeSwap) {
           executeSwap();
-          console.log('Swap function call initiated');
-        } else {
-          console.error('Swap function is not available');
         }
       }
     } catch (error) {
-      console.error('Transaction execution error:', error);
+      // Silently handle error
     }
   };
 
@@ -591,11 +555,8 @@ const Swap = () => {
   // Handle errors from contract interactions
   useEffect(() => {
     if (approvalError) {
-      console.error('Approval Error:', approvalError);
-
       // Check specifically for user rejection
       if (isUserRejectionError(approvalError)) {
-        console.log('User cancelled approval transaction');
         // Reset UI state without showing an error toast
         setIsExecutingSwap(false);
         setIsCheckingSwapDetails(false);
@@ -625,11 +586,8 @@ const Swap = () => {
     }
 
     if (swapError) {
-      console.error('Swap Error:', swapError);
-
       // Check specifically for user rejection
       if (isUserRejectionError(swapError)) {
-        console.log('User cancelled swap transaction');
         // Reset UI state without showing an error toast
         setIsExecutingSwap(false);
         setIsCheckingSwapDetails(false);

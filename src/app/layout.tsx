@@ -8,6 +8,8 @@ import ContextProvider from '@/lib/context';
 import { Inter, Red_Hat_Mono, Red_Hat_Text } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { PriceProvider } from '@/contexts/PriceContext';
+
 export const metadata: Metadata = {
   title: 'IFA LABS',
   description: `The world's first Multi-chain stablecoin oracle`,
@@ -47,11 +49,13 @@ export default async function RootLayout({
         className={`${inter.variable}  ${redHatMono.variable} ${redHatText.variable}`}
       >
         <ContextProvider cookies={cookies}>
-          <TokenProvider>
-            {children}
-            <Analytics />
-            <SpeedInsights />
-          </TokenProvider>
+          <PriceProvider refreshInterval={10000}>
+            <TokenProvider>
+              {children}
+              <Analytics />
+              <SpeedInsights />
+            </TokenProvider>
+          </PriceProvider>
         </ContextProvider>
       </body>
     </html>

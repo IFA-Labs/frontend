@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { SearchIcon, LockIcon } from '../../svg';
-import apiService, { TokenPrice } from '@/lib/api';
+import { usePrices } from '@/contexts/PriceContext';
 import { StaticImageData } from 'next/image';
 import Image from 'next/image';
 
@@ -15,6 +15,7 @@ interface CryptoData {
 }
 
 const CryptoTracker: React.FC = () => {
+  const { prices, loading } = usePrices();
   const [cryptoData, setCryptoData] = useState<CryptoData[]>([
     {
       symbol: 'CNGN/USD',
@@ -52,45 +53,34 @@ const CryptoTracker: React.FC = () => {
       icon: '/images/icons/usdt.svg',
     },
   ]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPrices = async () => {
-      try {
-        const prices = await apiService.getAllTokenPrices();
-        const updatedData = prices.map((item) => ({
-          symbol: item.symbol,
-          price: item.price,
-          change: item.change_7d || 0,
-          changePct: item.change_7d_pct || 0,
-          icon: item.icon,
-        })) as CryptoData[];
-        const PRIORITIZED = ['CNGN', 'BRZ', 'USDC', 'USDT', 'ETH'];
-        updatedData.sort((a, b) => {
-          const aSym = (a.symbol || '').toUpperCase();
-          const bSym = (b.symbol || '').toUpperCase();
-          const aIdx = PRIORITIZED.indexOf(aSym);
-          const bIdx = PRIORITIZED.indexOf(bSym);
-          if (aIdx !== -1 || bIdx !== -1) {
-            if (aIdx === -1) return 1;
-            if (bIdx === -1) return -1;
-            return aIdx - bIdx;
-          }
-          return aSym.localeCompare(bSym);
-        });
+    if (prices.length > 0) {
+      const updatedData = prices.map((item) => ({
+        symbol: item.symbol,
+        price: item.price,
+        change: item.change_7d || 0,
+        changePct: item.change_7d_pct || 0,
+        icon: item.icon,
+      })) as CryptoData[];
 
-        setCryptoData(updatedData);
-      } catch (error) {
-        console.error('Error fetching crypto prices:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const PRIORITIZED = ['CNGN', 'BRZ', 'USDC', 'USDT', 'ETH'];
+      updatedData.sort((a, b) => {
+        const aSym = (a.symbol || '').toUpperCase();
+        const bSym = (b.symbol || '').toUpperCase();
+        const aIdx = PRIORITIZED.indexOf(aSym);
+        const bIdx = PRIORITIZED.indexOf(bSym);
+        if (aIdx !== -1 || bIdx !== -1) {
+          if (aIdx === -1) return 1;
+          if (bIdx === -1) return -1;
+          return aIdx - bIdx;
+        }
+        return aSym.localeCompare(bSym);
+      });
 
-    fetchPrices();
-    const intervalId = setInterval(fetchPrices, 10000);
-    return () => clearInterval(intervalId);
-  }, []);
+      setCryptoData(updatedData);
+    }
+  }, [prices]);
 
   const formatPercentage = (pct: number): string => {
     return `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
