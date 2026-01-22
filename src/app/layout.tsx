@@ -175,8 +175,8 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        {/* AI & Machine-Readable Resources */}
-        <link
+<script src="https://cdn.visitors.now/v.js" data-token="fddfeb52-5a60-4a97-98de-fa5ca17b3620"></script>        
+<link
           rel="alternate"
           type="application/json"
           href="/api-spec.json"
