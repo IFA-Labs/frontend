@@ -1,0 +1,228 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "IFA LABS Oracle API",
+    "version": "1.0.0",
+    "description": "Multi-chain stablecoin oracle providing real-time price feeds for cryptocurrencies and stablecoins",
+    "contact": {
+      "name": "IFA LABS",
+      "url": "https://ifalabs.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.ifalabs.com/api",
+      "description": "Production API"
+    }
+  ],
+  "paths": {
+    "/assets": {
+      "get": {
+        "summary": "Get all supported assets",
+        "description": "Returns a list of all cryptocurrency assets supported by the oracle",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Asset"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/prices/last": {
+      "get": {
+        "summary": "Get latest price for an asset",
+        "description": "Returns the most recent price data for a specific asset including 7-day change information",
+        "parameters": [
+          {
+            "name": "asset",
+            "in": "query",
+            "required": true,
+            "description": "Asset ID to fetch price for",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/prices/audit": {
+      "get": {
+        "summary": "Get historical price data for auditing",
+        "description": "Returns price data within a date range for transparency and audit purposes",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "description": "Start date in ISO format",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "description": "End date in ISO format",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "asset",
+            "in": "query",
+            "required": false,
+            "description": "Optional asset ID to filter results",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditPrice"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Asset": {
+        "type": "object",
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "description": "Unique identifier for the asset"
+          },
+          "asset": {
+            "type": "string",
+            "description": "Asset symbol (e.g., ETH/USD, USDC/USD)"
+          },
+          "address": {
+            "type": "string",
+            "description": "Smart contract address (if applicable)"
+          }
+        }
+      },
+      "PriceResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "assetID": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number",
+            "description": "Raw price value (needs expo calculation)"
+          },
+          "expo": {
+            "type": "number",
+            "description": "Exponent for price calculation (actual_price = value * 10^expo)"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "source": {
+            "type": "string"
+          },
+          "is_aggr": {
+            "type": "boolean",
+            "description": "Whether price is aggregated from multiple sources"
+          },
+          "price_changes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PriceChange"
+            }
+          }
+        }
+      },
+      "PriceChange": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "type": "string",
+            "description": "Time period (e.g., '7d' for 7 days)"
+          },
+          "change": {
+            "type": "number",
+            "description": "Absolute price change"
+          },
+          "change_pct": {
+            "type": "number",
+            "description": "Percentage price change"
+          },
+          "from_price": {
+            "type": "number"
+          },
+          "to_price": {
+            "type": "number"
+          },
+          "from_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AuditPrice": {
+        "type": "object",
+        "description": "Historical price data for audit purposes"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "assets",
+      "description": "Asset management operations"
+    },
+    {
+      "name": "prices",
+      "description": "Price feed operations"
+    },
+    {
+      "name": "audit",
+      "description": "Transparency and audit operations"
+    }
+  ]
+}

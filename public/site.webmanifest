@@ -1,0 +1,29 @@
+{
+  "name": "IFA LABS - Multi-Chain Stablecoin Oracle",
+  "short_name": "IFA LABS",
+  "description": "The world's first Multi-chain stablecoin oracle. Get accurate, real-time price feeds for stablecoins across multiple blockchains.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "blockchain", "cryptocurrency"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}
