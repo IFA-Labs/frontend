@@ -1,98 +1,49 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { SearchIcon, LockIcon } from '../../svg';
+import Link from 'next/link';
+import { LockIcon } from '../../svg';
 import { usePrices } from '@/contexts/PriceContext';
 import { StaticImageData } from 'next/image';
 import Image from 'next/image';
-
-interface CryptoData {
-  symbol: string;
-  price: number;
-  change: number;
-  changePct: number;
-  icon: string | StaticImageData;
-}
+import {
+  formatFeedChange,
+  formatFeedPrice,
+  getFeedBadgeLabel,
+  getHomeFeedRows,
+} from '@/lib/data-feeds';
 
 const CryptoTracker: React.FC = () => {
   const { prices, loading } = usePrices();
-  const [cryptoData, setCryptoData] = useState<CryptoData[]>([
-    {
-      symbol: 'CNGN/USD',
-      price: 0,
-      change: 0,
-      changePct: 0,
-      icon: '/images/icons/cngn.svg',
-    },
-    {
-      symbol: 'BRZ/USD',
-      price: 0,
-      change: 0,
-      changePct: 0,
-      icon: '/images/icons/BRZ.svg',
-    },
-    {
-      symbol: 'ETH/USD',
-      price: 0,
-      change: 0,
-      changePct: 0,
-      icon: '/images/icons/eth.svg',
-    },
-    {
-      symbol: 'USDC/USD',
-      price: 0,
-      change: 0,
-      changePct: 0,
-      icon: '/images/icons/usdc.svg',
-    },
-    {
-      symbol: 'USDT/USD',
-      price: 0,
-      change: 0,
-      changePct: 0,
-      icon: '/images/icons/usdt.svg',
-    },
-  ]);
+  const cryptoData = getHomeFeedRows(prices);
 
-  useEffect(() => {
-    if (prices.length > 0) {
-      const updatedData = prices.map((item) => ({
-        symbol: item.symbol,
-        price: item.price,
-        change: item.change_7d || 0,
-        changePct: item.change_7d_pct || 0,
-        icon: item.icon,
-      })) as CryptoData[];
-
-      const PRIORITIZED = ['CNGN', 'BRZ', 'USDC', 'USDT', 'ETH'];
-      updatedData.sort((a, b) => {
-        const aSym = (a.symbol || '').toUpperCase();
-        const bSym = (b.symbol || '').toUpperCase();
-        const aIdx = PRIORITIZED.indexOf(aSym);
-        const bIdx = PRIORITIZED.indexOf(bSym);
-        if (aIdx !== -1 || bIdx !== -1) {
-          if (aIdx === -1) return 1;
-          if (bIdx === -1) return -1;
-          return aIdx - bIdx;
-        }
-        return aSym.localeCompare(bSym);
-      });
-
-      setCryptoData(updatedData);
+  const renderFeedIcon = (
+    symbol: string,
+    icon?: string | StaticImageData,
+  ) => {
+    if (icon) {
+      return (
+        <Image
+          src={icon}
+          alt={symbol}
+          width={20}
+          height={20}
+          style={{ marginRight: '8px' }}
+        />
+      );
     }
-  }, [prices]);
 
-  const formatPercentage = (pct: number): string => {
-    return `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
+    return <span className="fallback-feed-icon">{getFeedBadgeLabel(symbol)}</span>;
   };
 
   return (
     <div className="crypto-tracker">
-      <div className="price-wrapper">
-        <h3>
-          <LockIcon />
-          Rate by IFÁ LABS
-        </h3>
+      <div className="tracker-topbar">
+        <div className="price-wrapper">
+          <h3>
+            <LockIcon />
+            Rate by IFÁ LABS
+          </h3>
+        </div>
       </div>
 
       <div className="table-header">
@@ -103,7 +54,7 @@ const CryptoTracker: React.FC = () => {
 
       {loading ? (
         <div className="crypto-list">
-          {[...Array(4)].map((_, index) => (
+          {[...Array(6)].map((_, index) => (
             <div className="crypto-item skeleton-item" key={index}>
               <div className="column symbol">
                 <div className="skeleton skeleton-column symbol-skeleton" />
@@ -125,21 +76,11 @@ const CryptoTracker: React.FC = () => {
             return (
               <div className="crypto-item" key={index}>
                 <div className="column symbol">
-                  <Image
-                    src={crypto.icon}
-                    alt={crypto.symbol}
-                    width={20}
-                    height={20}
-                    style={{ marginRight: '8px' }}
-                  />
+                  {renderFeedIcon(crypto.baseSymbol, crypto.icon)}
                   {crypto.symbol}
                 </div>
                 <div className="column price">
-                  $
-                  {crypto.price.toLocaleString(undefined, {
-                    minimumFractionDigits: 7,
-                    maximumFractionDigits: 7,
-                  })}
+                  ${formatFeedPrice(crypto.price)}
                 </div>
                 <div
                   className={`column change ${
@@ -147,7 +88,7 @@ const CryptoTracker: React.FC = () => {
                   }`}
                 >
                   <span className="change-arrow">{isPositive ? '▲' : '▼'}</span>
-                  {formatPercentage(crypto.changePct)}
+                  {formatFeedChange(crypto.changePct)}
                 </div>
               </div>
             );

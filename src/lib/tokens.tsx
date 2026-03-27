@@ -3,6 +3,7 @@ import ETHIcon from '../../public/images/tokens/eth.svg';
 import USDTIcon from '../../public/images/tokens/usdt.svg';
 import BRZIcon from '../../public/images/tokens/BRZ.svg';
 import USDCIcon from '../../public/images/tokens/usdc.svg';
+import ZARPIcon from '../../public/images/tokens/zarp.svg';
 import { StaticImageData } from 'next/image';
 export interface TokenInfo {
   icon: StaticImageData | string;
@@ -51,6 +52,14 @@ export const tokenList: { [key: string]: TokenInfo } = {
     icon: ETHIcon,
     name: 'ETH',
     symbol: 'ETH',
+    order: 5,
+    address: '',
+    decimals: 6,
+  },
+  ZARP: {
+    icon: ZARPIcon,
+    name: 'ZARP',
+    symbol: 'ZARP',
     order: 5,
     address: '',
     decimals: 6,

@@ -188,6 +188,15 @@ const Navbar: React.FC = () => {
             handleMouseLeave(setShowProductsMenu, productsTimeoutRef)
           }
         >
+          {/* <Link href="/data-feeds" className="menu-item">
+            <div className="icon">
+              <FaqIcon />
+            </div>
+            <div className="link-details">
+              <div className="title">Data Feeds</div>
+              <div className="desc">Explore live oracle markets</div>
+            </div>
+          </Link> */}
           <Link href="/swap">
             <div className="icon">
               <FaqIcon />
