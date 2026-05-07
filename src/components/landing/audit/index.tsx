@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ApiService from '@/lib/api';
 import type { Asset } from '@/lib/api';
 import { tokenList } from '@/lib/tokens';
@@ -7,6 +7,8 @@ import Image, { StaticImageData } from 'next/image';
 import { CalendarIcon } from '../../svg';
 
 const Audit = () => {
+  const startDateInputRef = useRef<HTMLInputElement>(null);
+  const endDateInputRef = useRef<HTMLInputElement>(null);
   const [selectedAsset, setSelectedAsset] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -85,6 +87,26 @@ const Audit = () => {
         setIsDownloading(false);
       }
     })();
+  };
+
+  const openDatePicker = (
+    input: HTMLInputElement | null,
+    setFocused: React.Dispatch<React.SetStateAction<boolean>>,
+  ) => {
+    if (!input) {
+      return;
+    }
+
+    setFocused(true);
+    input.focus({ preventScroll: true });
+
+    try {
+      if (typeof input.showPicker === 'function') {
+        input.showPicker();
+      }
+    } catch {
+      // Some browsers only allow showPicker from specific user gestures.
+    }
   };
 
   return (
@@ -178,12 +200,15 @@ const Audit = () => {
             <div className="date-field">
               <div
                 className="input-wrapper"
-                onClick={() => setStartDateFocused(true)}
+                onClick={() =>
+                  openDatePicker(startDateInputRef.current, setStartDateFocused)
+                }
               >
                 {!startDate && !startDateFocused && (
                   <span className="placeholder">Start date</span>
                 )}
                 <input
+                  ref={startDateInputRef}
                   type="date"
                   aria-label="Start date"
                   value={startDate}
@@ -205,12 +230,15 @@ const Audit = () => {
             <div className="date-field">
               <div
                 className="input-wrapper"
-                onClick={() => setEndDateFocused(true)}
+                onClick={() =>
+                  openDatePicker(endDateInputRef.current, setEndDateFocused)
+                }
               >
                 {!endDate && !endDateFocused && (
                   <span className="placeholder">End date</span>
                 )}
                 <input
+                  ref={endDateInputRef}
                   type="date"
                   aria-label="End date"
                   value={endDate}

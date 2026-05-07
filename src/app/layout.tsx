@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import '@/styles/globals.scss';
+import '@/styles/globals.css';
 import '@/styles/main.scss';
-import '@/styles/_variable.scss';
 import { TokenProvider } from '@/components/app/token-provider';
 import { headers } from 'next/headers';
 import ContextProvider from '@/lib/context';

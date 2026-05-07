@@ -1,21 +1,21 @@
-@import '../components/navbar/style.scss';
-@import '../components/blog-card/style.scss';
-@import '../components/start-building/style.scss';
-@import '../components/footer/style.scss';
+@use '../components/navbar/style';
+@use '../components/blog-card/style' as blog-card;
+@use '../components/start-building/style' as start-building;
+@use '../components/footer/style' as footer;
 
-@import '../components/landing/hero/style.scss';
-@import '../components/landing/ticker/style.scss';
-@import '../components/landing/stats/style.scss';
-@import '../components/landing/benefits/style.scss';
-@import '../components/landing/blog/style.scss';
-@import '../components/landing/audit/style.scss';
+@use '../components/landing/hero/style' as landing-hero;
+@use '../components/landing/ticker/style' as landing-ticker;
+@use '../components/landing/stats/style' as landing-stats;
+@use '../components/landing/benefits/style' as landing-benefits;
+@use '../components/landing/blog/style' as landing-blog;
+@use '../components/landing/audit/style' as landing-audit;
 
-@import '../components/blog/style.scss';
-@import '../components/faq/style.scss';
-@import '../components/data-feeds/style.scss';
+@use '../components/blog/style' as blog;
+@use '../components/faq/style' as faq;
+@use '../components/data-feeds/style' as data-feeds;
 
-@import '../components/select-token-modal/style.scss';
+@use '../components/select-token-modal/style' as select-token-modal;
 
-@import '../components/app/navbar/style.scss';
-@import '../components/app/swap/style.scss';
-@import '../components/app/pool/style.scss';
+@use '../components/app/navbar/style' as app-navbar;
+@use '../components/app/swap/style' as app-swap;
+@use '../components/app/pool/style' as app-pool;

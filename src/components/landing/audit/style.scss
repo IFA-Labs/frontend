@@ -155,11 +155,10 @@
           padding: 0.5rem 0.5rem;
           display: flex;
           flex-direction: column-reverse;
+          justify-content: flex-start;
           gap: 0.5rem;
           width: 100%;
           max-width: calc(100% - 4rem);
-          height: 200px;
-          z-index: 1111111111;
           overflow: auto;
 
           @media (max-width: 768px) {
@@ -167,17 +166,18 @@
           }
 
           @media (max-width: 600px) {
-            top: 140px;
+            top: 130px;
             left: 1.5rem;
             gap: 0.25rem;
             max-width: calc(100% - 3rem);
+            padding: 0 0.5rem;
           }
         }
 
         .dropdown-item {
           width: 100%;
-          min-height: 40px;
-          padding: 0.75rem 2rem;
+          // min-height: 40px;
+          padding: 0rem 2rem;
           text-align: left;
           color: #ffffffd6;
           background: none;
@@ -194,8 +194,8 @@
           }
 
           @media (max-width: 600px) {
-            padding: 0.65rem 1.5rem;
-            font-size: 12px;
+            padding: 0.5rem 1.5rem;
+            font-size: 14px;
 
             img {
               width: 14px;
