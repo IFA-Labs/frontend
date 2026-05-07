@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import ApiService from '@/lib/api';
 import type { Asset } from '@/lib/api';
 import { tokenList } from '@/lib/tokens';
@@ -82,6 +83,13 @@ const Audit = () => {
         setDownloadSuccess(true);
         setTimeout(() => setDownloadSuccess(false), 3000);
       } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 504) {
+          alert(
+            'The audit report is taking too long to generate. Please try a smaller date range or try again later.',
+          );
+          return;
+        }
+
         alert('Failed to download audit report. Please try again.');
       } finally {
         setIsDownloading(false);
