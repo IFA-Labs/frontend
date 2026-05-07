@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { ArrowRightIcon } from '../../svg';
 import HeroIllustration from '../../../../public/images/hero-illustration.svg';
 
-import { KombatLogo, ConvexityLogo, BaseLogo, CngnLogo } from '../../svg';
+import { ZarpLogo, BaseLogo, CngnLogo, MantleLogo } from '../../svg';
 import CryptoTracker from './tracker';
 import TabToggle from './tab-toggle';
 import Link from 'next/link';
@@ -28,10 +28,7 @@ const Hero = () => {
             for stablecoin and financial data feeds
           </p>
 
-          <Link
-            href="https://docs.ifalabs.com"
-            target="_blank"
-          >
+          <Link href="https://docs.ifalabs.com" target="_blank">
             <button>
               Start building <ArrowRightIcon />
             </button>
@@ -42,9 +39,9 @@ const Hero = () => {
 
             <div className="partners">
               <CngnLogo />
-              <KombatLogo />
+              <ZarpLogo />
               <BaseLogo />
-              <ConvexityLogo />
+              <MantleLogo />
             </div>
           </div>
         </div>
@@ -60,9 +57,9 @@ const Hero = () => {
 
         <div className="partners">
           <CngnLogo />
-          <KombatLogo />
+          <ZarpLogo />
           <BaseLogo />
-          <ConvexityLogo />
+          <MantleLogo />
         </div>
       </div>
       <video autoPlay muted loop playsInline className="hero-img">

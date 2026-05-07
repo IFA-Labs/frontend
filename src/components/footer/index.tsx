@@ -49,7 +49,7 @@ const Footer = () => {
       <div className="footer-bottom">
         <div className="left">
           <div>
-            ©2025 Ifalabs <span>✦ 9:00 Lagos (WAT)</span>
+            ©2026 Ifalabs <span>✦ 9:00 Lagos (WAT)</span>
           </div>
           <div className="privacy-link">Privacy Statement</div>
         </div>

@@ -158,6 +158,9 @@
           gap: 0.5rem;
           width: 100%;
           max-width: calc(100% - 4rem);
+          height: 200px;
+          z-index: 1111111111;
+          overflow: auto;
 
           @media (max-width: 768px) {
             width: 100%;
@@ -173,6 +176,7 @@
 
         .dropdown-item {
           width: 100%;
+          min-height: 40px;
           padding: 0.75rem 2rem;
           text-align: left;
           color: #ffffffd6;

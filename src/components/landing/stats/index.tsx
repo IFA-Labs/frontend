@@ -102,14 +102,14 @@ const StatsSection: React.FC = () => {
         'Provides reliable price data for both onchain and offchain use cases, ensuring comprehensive market coverage and accuracy.',
       number: '100',
       label: 'Data Feeds',
-      target: 2,
+      target: 10,
     },
     {
       description:
-        'Per day allow for more precise and secure operations for your smart contracts.',
+        'Allow precise and secure operations for your smart contracts',
       number: '1',
       label: 'Blockchains',
-      target: 1,
+      target: 2,
     },
   ];
 
