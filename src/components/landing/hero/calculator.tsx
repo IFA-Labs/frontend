@@ -1,17 +1,11 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import SelectTokenModal from '@/components/select-token-modal';
-import { SwapIcon, LockIcon } from '@/components/svg';
+import { SwapIcon } from '@/components/svg';
 import Link from 'next/link';
 import Image from 'next/image';
-import apiService from '@/lib/api';
 import { tokenList, TokenInfo, formatPrice } from '@/lib/tokens';
 import useExchangeRate from '@/hooks/useExchangeRates';
-
-interface Token {
-  icon: string;
-  name: string;
-}
 
 const Calculator = () => {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -27,12 +21,24 @@ const Calculator = () => {
     tokens.pay.name,
     tokens.receive.name,
   );
+  const swapHref = useMemo(() => {
+    const params = new URLSearchParams({
+      payToken: tokens.pay.symbol,
+      receiveToken: tokens.receive.symbol,
+    });
+
+    if (amounts.pay) {
+      params.set('payAmount', amounts.pay);
+    }
+
+    return `/swap?${params.toString()}`;
+  }, [amounts.pay, tokens.pay.symbol, tokens.receive.symbol]);
 
   useEffect(() => {
     if (exchangeRate && amounts.pay) {
       const payAmount = parseFloat(amounts.pay);
       if (!isNaN(payAmount)) {
-        const receiveAmount = (payAmount * exchangeRate).toFixed(6);
+        const receiveAmount = (payAmount * exchangeRate).toFixed(3);
         setAmounts((prev) => ({ ...prev, receive: receiveAmount }));
       }
     }
@@ -42,7 +48,7 @@ const Calculator = () => {
     if (exchangeRate && amounts.receive && !amounts.pay) {
       const receiveAmount = parseFloat(amounts.receive);
       if (!isNaN(receiveAmount) && exchangeRate !== 0) {
-        const payAmount = (receiveAmount / exchangeRate).toFixed(6);
+        const payAmount = (receiveAmount / exchangeRate).toFixed(3);
         setAmounts((prev) => ({ ...prev, pay: payAmount }));
       }
     }
@@ -71,7 +77,7 @@ const Calculator = () => {
     if (exchangeRate && value) {
       const payAmount = parseFloat(value);
       if (!isNaN(payAmount)) {
-        const receiveAmount = (payAmount * exchangeRate).toFixed(6);
+        const receiveAmount = (payAmount * exchangeRate).toFixed(3);
         setAmounts((prev) => ({ ...prev, pay: value, receive: receiveAmount }));
       }
     } else {
@@ -87,7 +93,7 @@ const Calculator = () => {
     if (exchangeRate && value) {
       const receiveAmount = parseFloat(value);
       if (!isNaN(receiveAmount) && exchangeRate !== 0) {
-        const payAmount = (receiveAmount / exchangeRate).toFixed(6);
+        const payAmount = (receiveAmount / exchangeRate).toFixed(3);
         setAmounts({ pay: payAmount, receive: value });
       }
     } else {
@@ -97,24 +103,19 @@ const Calculator = () => {
 
   return (
     <div className="calculator-container">
-      <div className="price-wrapper">
-        <h3>
-          <LockIcon />
-          Rate by IFÁ LABS
-        </h3>
-        {loading ? (
-          <div className="price">Loading rate...</div>
-        ) : exchangeRate ? (
-          <div className="price">
-            1 {tokens.pay.name} ≈ {formatPrice(exchangeRate)}{' '}
-            {tokens.receive.name}
-          </div>
-        ) : (
-          <div className="price">Rate unavailable</div>
-        )}
-      </div>
-
       <div className="swap-container">
+        <div className="price-wrapper">
+          {loading ? (
+            <div className="price">Loading rate...</div>
+          ) : exchangeRate ? (
+            <div className="price">
+              1 {tokens.pay.name} ≈ {formatPrice(exchangeRate)}{' '}
+              {tokens.receive.name}
+            </div>
+          ) : (
+            <div className="price">Rate unavailable</div>
+          )}
+        </div>
         <div className="swap-input-container">
           <div className="swap-input">
             <div className="swap-form">
@@ -166,17 +167,7 @@ const Calculator = () => {
           </div>
         </div>
 
-        <Link
-          href={{
-            pathname: '/swap',
-            query: {
-              payAmount: amounts.pay,
-              receiveAmount: amounts.receive,
-              payToken: tokens.pay.name,
-              receiveToken: tokens.receive.name,
-            },
-          }}
-        >
+        <Link href={swapHref}>
           <button
             className="swap-cta"
             // disabled={!amounts.pay || !amounts.receive || loading}

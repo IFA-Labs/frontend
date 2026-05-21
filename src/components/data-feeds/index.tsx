@@ -1,42 +1,150 @@
 'use client';
 
+
 import Link from 'next/link';
 import Image, { StaticImageData } from 'next/image';
-import { useState } from 'react';
-import { usePrices } from '@/contexts/PriceContext';
+import type { ComponentType } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  buildDataFeedRows,
-  formatFeedChange,
+  NetworkArbitrumOne,
+  NetworkBase,
+  NetworkBaseSepolia,
+  NetworkBinanceSmartChain,
+  NetworkEthereum,
+  NetworkMantle,
+  NetworkMantleSepolia,
+  NetworkPolygon,
+} from '@web3icons/react';
+import apiService, { OracleFeed } from '@/lib/api';
+import StartBuilding from '../start-building';
+import {
+  buildDataFeedRowsFromFeeds,
+  DataFeedRow,
   formatFeedPrice,
   getFeedBadgeLabel,
-  getFeedSlug,
 } from '@/lib/data-feeds';
 
+const networkIconLabels: Record<string, string> = {
+  'Arbitrum Mainnet': 'A',
+  'BNB Chain Mainnet': 'BNB',
+  'Ethereum Mainnet': 'E',
+  'Polygon Mainnet': 'P',
+  'Base Mainnet': 'B',
+};
+
+const categoryIconLabels: Record<string, string> = {
+  Crypto: 'B',
+  Fiat: '$',
+  Stablecoin: '$',
+  'Newly launched': 'NEW',
+  'SVR-enabled': 'SVR',
+};
+
+const pageFeedOrder = [
+  'BTC',
+  'ETHBTC',
+  'ETH',
+  'BNB',
+  'POL',
+  'ARB',
+  'USDC',
+  'USDT',
+  'CNGN',
+  'BRZ',
+  'ZARP',
+];
+
+type Web3NetworkIcon = ComponentType<{
+  className?: string;
+  size?: number | string;
+  variant?: 'branded' | 'mono' | 'background';
+}>;
+
+const networkIconComponents: Record<string, Web3NetworkIcon> = {
+  '1': NetworkEthereum,
+  '56': NetworkBinanceSmartChain,
+  '137': NetworkPolygon,
+  '42161': NetworkArbitrumOne,
+  '5000': NetworkMantle,
+  '5003': NetworkMantleSepolia,
+  '8453': NetworkBase,
+  '84532': NetworkBaseSepolia,
+};
+
 const DataFeeds = () => {
-  const { prices, loading } = usePrices();
+  const [apiFeeds, setApiFeeds] = useState<OracleFeed[]>([]);
+  const [feedsLoading, setFeedsLoading] = useState(true);
   const [networkFilter, setNetworkFilter] = useState('All Networks');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
 
-  const rows = buildDataFeedRows(prices);
-  const networks = ['All Networks', ...new Set(rows.map((row) => row.network))];
-  const categories = [
-    'All Categories',
-    ...new Set(rows.map((row) => row.category)),
-  ];
+  useEffect(() => {
+    let isMounted = true;
 
-  const filteredRows = rows.filter((row) => {
-    const matchesNetwork =
-      networkFilter === 'All Networks' || row.network === networkFilter;
-    const matchesCategory =
-      categoryFilter === 'All Categories' || row.category === categoryFilter;
+    const fetchFeeds = async () => {
+      try {
+        const feeds = await apiService.getFeeds();
+        if (isMounted) {
+          setApiFeeds(feeds);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setApiFeeds([]);
+        }
+      } finally {
+        if (isMounted) {
+          setFeedsLoading(false);
+        }
+      }
+    };
 
-    return matchesNetwork && matchesCategory;
-  });
+    fetchFeeds();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const rows = buildDataFeedRowsFromFeeds(apiFeeds);
+  const availableNetworks = [...new Set(rows.map((row) => row.network))];
+  const networks = ['All Networks', ...availableNetworks];
+  const networkRows = new Map(
+    rows.map((row) => [row.network, row] as [string, DataFeedRow]),
+  );
+  const availableCategories = [...new Set(rows.flatMap((row) => row.categories))];
+  const categories = ['All Categories', ...availableCategories];
+  const isLoading = feedsLoading && rows.length === 0;
+
+  const filteredRows = rows
+    .filter((row) => {
+      const matchesNetwork =
+        networkFilter === 'All Networks' || row.network === networkFilter;
+      const matchesCategory =
+        categoryFilter === 'All Categories' ||
+        row.categories.includes(categoryFilter);
+
+      return matchesNetwork && matchesCategory;
+    })
+    .sort((a, b) => {
+      const aIndex = pageFeedOrder.indexOf(a.baseSymbol);
+      const bIndex = pageFeedOrder.indexOf(b.baseSymbol);
+
+      if (aIndex === -1 && bIndex === -1) {
+        return a.symbol.localeCompare(b.symbol);
+      }
+
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
 
   const renderFeedIcon = (
     symbol: string,
     icon?: string | StaticImageData,
   ) => {
+    if (typeof icon === 'string' && icon.startsWith('http')) {
+      return <img src={icon} alt={symbol} width={20} height={20} />;
+    }
+
     if (icon) {
       return <Image src={icon} alt={symbol} width={20} height={20} />;
     }
@@ -46,28 +154,67 @@ const DataFeeds = () => {
     );
   };
 
+  const renderFilterIcon = (label: string) => (
+    <span className="filter-icon">
+      {networkIconLabels[label] || categoryIconLabels[label] || label.slice(0, 2)}
+    </span>
+  );
+
+  const renderNetworkIcon = (row: DataFeedRow) => {
+    if (row.chainId === '42420') {
+      return (
+        <img
+          src="/images/networks/Asset Chain.png"
+          alt={row.network}
+          width={16}
+          height={16}
+        />
+      );
+    }
+
+    const NetworkIcon = row.chainId
+      ? networkIconComponents[row.chainId]
+      : undefined;
+
+    if (NetworkIcon) {
+      return (
+        <NetworkIcon
+          className="network-web3-icon"
+          size={16}
+          variant="branded"
+        />
+      );
+    }
+
+    if (row.chainLogoUrl) {
+      return <img src={row.chainLogoUrl} alt={row.network} width={16} height={16} />;
+    }
+
+    return renderFilterIcon(row.network);
+  };
+
+  const formatAnswer = (prefix: string, price: number) =>
+    `${prefix}${formatFeedPrice(price)}`;
+
   return (
     <section className="data-feeds-page">
       <div className="data-feeds-shell">
         <div className="data-feeds-heading">
-          <div>
-            <span className="eyebrow">Oracle Coverage</span>
-            <h1>Data Feeds</h1>
-            <p>
-              Highly secure, reliable and decentralized real-world data
-              published onchain.
-            </p>
-          </div>
-
-          <Link href="https://docs.ifalabs.com" target="_blank" className="docs-link">
-            Developer docs
-          </Link>
+          <h1>Data Feeds</h1>
+          <p>
+            Highly secure, reliable and decentralized real-world data published
+            onchain.
+          </p>
         </div>
 
         <div className="data-feeds-controls">
           <label className="filter-select">
-            <span>Network</span>
+            <span className="select-value">
+              {networkFilter}
+              <small>{networks.length - 1}</small>
+            </span>
             <select
+              aria-label="Filter by network"
               value={networkFilter}
               onChange={(event) => setNetworkFilter(event.target.value)}
             >
@@ -77,11 +224,16 @@ const DataFeeds = () => {
                 </option>
               ))}
             </select>
+            <span className="select-chevron">v</span>
           </label>
 
           <label className="filter-select">
-            <span>Category</span>
+            <span className="select-value">
+              {categoryFilter}
+              <small>{categories.length - 1}</small>
+            </span>
             <select
+              aria-label="Filter by category"
               value={categoryFilter}
               onChange={(event) => setCategoryFilter(event.target.value)}
             >
@@ -91,28 +243,33 @@ const DataFeeds = () => {
                 </option>
               ))}
             </select>
+            <span className="select-chevron">v</span>
           </label>
         </div>
 
         <div className="filter-pills">
-          {networks.slice(1).map((network) => (
+          {availableNetworks.map((network) => (
             <button
               key={network}
               className={networkFilter === network ? 'active' : ''}
               onClick={() => setNetworkFilter(network)}
               type="button"
             >
+              {networkRows.get(network)
+                ? renderNetworkIcon(networkRows.get(network) as DataFeedRow)
+                : renderFilterIcon(network)}
               {network}
             </button>
           ))}
 
-          {categories.slice(1).map((category) => (
+          {availableCategories.map((category) => (
             <button
               key={category}
               className={categoryFilter === category ? 'active' : ''}
               onClick={() => setCategoryFilter(category)}
               type="button"
             >
+              {renderFilterIcon(category)}
               {category}
             </button>
           ))}
@@ -129,7 +286,7 @@ const DataFeeds = () => {
           </div>
 
           <div className="table-body">
-            {loading
+            {isLoading
               ? [...Array(8)].map((_, index) => (
                   <div className="feed-row skeleton-row" key={index}>
                     <div className="skeleton-box" />
@@ -141,39 +298,33 @@ const DataFeeds = () => {
                   </div>
                 ))
               : filteredRows.map((row) => {
-                  const isPositive = row.changePct >= 0;
-
                   return (
-                    <Link
-                      href={`/data-feeds/${getFeedSlug(row.baseSymbol)}`}
+                    <div
                       className="feed-row"
-                      key={row.baseSymbol}
+                      key={row.feedId}
                     >
                       <div className="feed-cell feed-cell-primary">
                         <span className="feed-cell-label">Feed</span>
                         <div className="feed-identity">
                           {renderFeedIcon(row.baseSymbol, row.icon)}
-                          <div className="feed-identity-copy">
-                            <strong>{row.symbol}</strong>
-                            <span
-                              className={`trend-pill ${
-                                isPositive ? 'positive' : 'negative'
-                              }`}
-                            >
-                              {formatFeedChange(row.changePct)}
-                            </span>
-                          </div>
+                          <strong>{row.symbol}</strong>
+                          {row.svrEnabled && (
+                            <span className="svr-pill">SVR</span>
+                          )}
                         </div>
                       </div>
 
                       <div className="feed-cell">
                         <span className="feed-cell-label">Network</span>
-                        <span>{row.network}</span>
+                        <span className="network-value">
+                          {renderNetworkIcon(row)}
+                          {row.network}
+                        </span>
                       </div>
 
                       <div className="feed-cell">
                         <span className="feed-cell-label">Answer</span>
-                        <strong>${formatFeedPrice(row.price)}</strong>
+                        <div>{formatAnswer(row.answerPrefix, row.price)}</div>
                       </div>
 
                       <div className="feed-cell">
@@ -188,14 +339,29 @@ const DataFeeds = () => {
 
                       <div className="feed-cell">
                         <span className="feed-cell-label">Asset Class</span>
-                        <span className="asset-class-pill">{row.assetClass}</span>
+                        <span className="asset-class-value">
+                          {renderFilterIcon(row.assetClass)}
+                          {row.assetClass}
+                        </span>
                       </div>
-                    </Link>
+                    </div>
                   );
                 })}
           </div>
         </div>
       </div>
+
+      <div className="request-data-field-banner">
+        <p>Do you need a new data field</p>
+        <Link href="/request-data-field" className="request-data-field-cta">
+          Request new data Field
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
+      </div>
+
+      <StartBuilding />
     </section>
   );
 };

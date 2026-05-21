@@ -1,15 +1,14 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { SwapIcon } from '@/components/svg';
 import SelectTokenModal from '@/components/select-token-modal';
 import { useSearchParams } from 'next/navigation';
 import { useAccount, useBalance } from 'wagmi';
-import { parseUnits, formatUnits } from 'viem';
+import { parseUnits } from 'viem';
 import useExchangeRate from '@/hooks/useExchangeRates';
 import apiService from '@/lib/api';
-import { tokenList, TokenInfo, formatPrice } from '@/lib/tokens';
+import { tokenList, TokenInfo } from '@/lib/tokens';
 import { SwapCTAButton } from './cta-button';
-import { StaticImageData } from 'next/image';
 import Image from 'next/image';
 import {
   useTokenApproval,
@@ -19,15 +18,28 @@ import {
 import { useToast } from '@/hooks/useToast';
 import { usePrices } from '@/contexts/PriceContext';
 
-interface TokenDisplay {
-  icon: string | StaticImageData;
-  name: string;
-}
-
 const NATIVE_TOKEN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+
+const normalizeNativeAddress = (token: TokenInfo): TokenInfo => {
+  if (token.symbol === 'ETH' && (!token.address || token.address === '')) {
+    return { ...token, address: NATIVE_TOKEN_ADDRESS, decimals: 18 };
+  }
+
+  return token;
+};
+
+const getContractToken = (token?: TokenInfo) => ({
+  address:
+    token?.symbol === 'ETH' || !token?.address || token.address === ''
+      ? NATIVE_TOKEN_ADDRESS
+      : token.address,
+  symbol: token?.symbol || 'ETH',
+  decimals: token?.decimals || 18,
+});
 
 const Swap = () => {
   const searchParams = useSearchParams();
+  const initialParamsAppliedRef = useRef(false);
   const [isModalOpen, setModalOpen] = useState(false);
   const [activeTokenField, setActiveTokenField] = useState<'from' | 'to'>(
     'from',
@@ -43,27 +55,8 @@ const Swap = () => {
   const [fromToken, setFromToken] = useState<TokenInfo | undefined>(undefined);
   const [toToken, setToToken] = useState<TokenInfo | undefined>(undefined);
   const [fromAmount, setFromAmount] = useState<string>('');
-  const [toAmount, setToAmount] = useState<string>('');
 
-  const [tokens, setTokens] = useState<{
-    pay: TokenDisplay;
-    receive: TokenDisplay;
-  }>({
-    pay: { icon: '/images/eth.svg', name: 'ETH' },
-    receive: { icon: '/images/usdt.svg', name: 'USDT' },
-  });
-
-  const [isCheckingSwapDetails, setIsCheckingSwapDetails] = useState(false);
-  const [swapProceedDetails, setSwapProceedDetails] = useState({
-    canProceed: false,
-    message: 'Enter an amount',
-  });
-  const [isExecutingSwap, setIsExecutingSwap] = useState(false);
-  const [tokenPrices, setTokenPrices] = useState<Record<string, number>>({});
-  const [priceImpact, setPriceImpact] = useState<string>('Low');
-  const [minReceived, setMinReceived] = useState<string>('0');
-  const [slippageTolerance, setSlippageTolerance] = useState<number>(0.5);
-  const [approvalDebugInfo, setApprovalDebugInfo] = useState<string>('');
+  const slippageTolerance = 0.5;
 
   const { address, isConnected, chain } = useAccount();
   const { showToast } = useToast();
@@ -75,18 +68,14 @@ const Swap = () => {
     approve,
     error: approvalError,
   } = useTokenApproval(
-    // Use proper token address - for native ETH use the constant instead of empty string
-    fromToken?.symbol === 'ETH' &&
-      (!fromToken?.address || fromToken?.address === '')
-      ? NATIVE_TOKEN_ADDRESS
-      : fromToken?.address,
+    getContractToken(fromToken).address,
     address as `0x${string}` | undefined,
     fromAmount,
     fromToken?.decimals || 18,
   );
 
   // Contract integration - Swap Execution
-  const swapDeadline = getDeadlineTimestamp(20); // 20 minutes from now
+  const swapDeadline = useMemo(() => getDeadlineTimestamp(20), []);
 
   const {
     isSwapping: isSwapLoading,
@@ -94,30 +83,8 @@ const Swap = () => {
     execute: executeSwap,
     error: swapError,
   } = useSwapExecution({
-    fromToken: fromToken
-      ? {
-          // Use proper token address for ETH to avoid empty string
-          address:
-            fromToken.symbol === 'ETH' &&
-            (!fromToken.address || fromToken.address === '')
-              ? NATIVE_TOKEN_ADDRESS
-              : fromToken.address,
-          symbol: fromToken.symbol,
-          decimals: fromToken.decimals,
-        }
-      : { address: NATIVE_TOKEN_ADDRESS, symbol: 'ETH', decimals: 18 },
-    toToken: toToken
-      ? {
-          // Use proper token address for ETH to avoid empty string
-          address:
-            toToken.symbol === 'ETH' &&
-            (!toToken.address || toToken.address === '')
-              ? NATIVE_TOKEN_ADDRESS
-              : toToken.address,
-          symbol: toToken.symbol,
-          decimals: toToken.decimals,
-        }
-      : { address: NATIVE_TOKEN_ADDRESS, symbol: 'ETH', decimals: 18 },
+    fromToken: getContractToken(fromToken),
+    toToken: getContractToken(toToken),
     fromAmount,
     slippageTolerance,
     deadline: swapDeadline,
@@ -172,61 +139,42 @@ const Swap = () => {
         });
 
         setAvailableTokens(tokenMap);
-
-        // Initialize default tokens if not already set
-        if (!fromToken) {
-          const defaultFromToken =
-            tokenMap['ETH'] || Object.values(tokenMap)[0];
-          setFromToken(defaultFromToken);
-          setTokens((prev) => ({
-            ...prev,
-            pay: {
-              icon: defaultFromToken?.icon || '/images/tokens/eth.svg',
-              name: defaultFromToken?.symbol || 'ETH',
-            },
-          }));
-        }
-        if (!toToken) {
-          const defaultToToken = tokenMap['USDT'] || Object.values(tokenMap)[1];
-          setToToken(defaultToToken);
-          setTokens((prev) => ({
-            ...prev,
-            receive: {
-              icon: defaultToToken?.icon || '/images/tokens/usdt.svg',
-              name: defaultToToken?.symbol || 'USDT',
-            },
-          }));
-        }
       } catch (error) {
-        // Silently handle error
+        setAvailableTokens(
+          Object.values(tokenList).reduce<Record<string, TokenInfo>>(
+            (tokenMap, token) => {
+              tokenMap[token.symbol] = normalizeNativeAddress(token);
+              return tokenMap;
+            },
+            {},
+          ),
+        );
       }
     };
 
     fetchAvailableTokens();
   }, []);
 
-  // Use centralized price context
   const { prices: contextPrices } = usePrices();
 
-  // Update token prices from context
-  useEffect(() => {
+  const tokenPrices = useMemo(() => {
+    const priceMap: Record<string, number> = {};
+
     if (contextPrices.length > 0) {
-      const priceMap: Record<string, number> = {};
       contextPrices.forEach((item) => {
         const symbol = item.symbol.split('/')[0];
         priceMap[symbol] = item.price;
       });
-      setTokenPrices(priceMap);
     }
+
+    return priceMap;
   }, [contextPrices]);
 
-  // Use the exchange rate hook
-  const { rate: exchangeRate, loading: rateLoading } = useExchangeRate(
+  const { rate: exchangeRate } = useExchangeRate(
     fromToken?.symbol || '',
     toToken?.symbol || '',
   );
 
-  // Get token balance using wagmi
   const { data: fromTokenBalance, isLoading: isFromBalanceLoading } =
     useBalance({
       address: address,
@@ -234,214 +182,158 @@ const Swap = () => {
         fromToken?.symbol === 'ETH' ||
         !fromToken?.address ||
         fromToken?.address === ''
-          ? undefined // undefined for native ETH balance
+          ? undefined
           : (fromToken?.address as `0x${string}`),
       chainId: chain?.id,
     });
 
-  // Initialize from URL parameters
   useEffect(() => {
-    if (Object.keys(availableTokens).length === 0) return;
+    const tokenValues = Object.values(availableTokens);
+    if (initialParamsAppliedRef.current || tokenValues.length === 0) return;
 
-    const queryPayTokenSymbol = searchParams.get('payToken');
-    const queryReceiveTokenSymbol = searchParams.get('receiveToken');
+    const getTokenBySymbol = (symbol: string | null) => {
+      if (!symbol) return undefined;
+      return availableTokens[symbol.toUpperCase()];
+    };
+
+    const nextFromToken =
+      getTokenBySymbol(searchParams.get('payToken')) ||
+      availableTokens['ETH'] ||
+      tokenValues[0];
+    const fallbackToToken =
+      (availableTokens['USDT']?.symbol !== nextFromToken?.symbol
+        ? availableTokens['USDT']
+        : undefined) ||
+      tokenValues.find((token) => token.symbol !== nextFromToken?.symbol) ||
+      nextFromToken;
+    const queryToToken = getTokenBySymbol(searchParams.get('receiveToken'));
+    const nextToToken =
+      queryToToken?.symbol === nextFromToken?.symbol
+        ? fallbackToToken
+        : queryToToken || fallbackToToken;
+
+    setFromToken(nextFromToken);
+    setToToken(nextToToken);
+
     const queryPayAmount = searchParams.get('payAmount');
-
-    if (queryPayTokenSymbol && availableTokens[queryPayTokenSymbol]) {
-      const newFromToken = availableTokens[queryPayTokenSymbol];
-      setFromToken(newFromToken);
-      setTokens((prev) => ({
-        ...prev,
-        pay: {
-          icon: newFromToken.icon || '/images/eth.svg',
-          name: newFromToken.symbol || 'ETH',
-        },
-      }));
-    }
-    if (queryReceiveTokenSymbol && availableTokens[queryReceiveTokenSymbol]) {
-      const newToToken = availableTokens[queryReceiveTokenSymbol];
-      setToToken(newToToken);
-      setTokens((prev) => ({
-        ...prev,
-        receive: {
-          icon: newToToken.icon || '/images/usdt.svg',
-          name: newToToken.symbol || 'USDT',
-        },
-      }));
-    }
-    if (queryPayAmount) {
+    if (queryPayAmount && /^[0-9]*\.?[0-9]*$/.test(queryPayAmount)) {
       setFromAmount(queryPayAmount);
     }
+
+    initialParamsAppliedRef.current = true;
   }, [searchParams, availableTokens]);
 
-  // Calculate 'toAmount' when 'fromAmount' or tokens change
-  useEffect(() => {
+  const swapQuote = useMemo(() => {
+    const numericFromAmount = parseFloat(fromAmount);
+    const decimals = Math.min(toToken?.decimals || 6, 6);
+
     if (
-      fromToken &&
-      toToken &&
-      fromAmount &&
-      exchangeRate &&
-      !isCheckingSwapDetails
+      !fromToken ||
+      !toToken ||
+      !exchangeRate ||
+      isNaN(numericFromAmount) ||
+      numericFromAmount <= 0
     ) {
-      const payAmountNum = parseFloat(fromAmount);
-      if (!isNaN(payAmountNum) && payAmountNum > 0) {
-        const calculatedToAmount = (payAmountNum * exchangeRate).toFixed(
-          toToken.decimals > 6 ? 6 : toToken.decimals,
-        );
-        setToAmount(calculatedToAmount);
-
-        // Calculate minimum received based on slippage tolerance
-        const slippageRate = 1 - slippageTolerance / 100;
-        setMinReceived(
-          (parseFloat(calculatedToAmount) * slippageRate).toFixed(
-            toToken.decimals > 6 ? 6 : toToken.decimals,
-          ),
-        );
-
-        // Calculate price impact (simplified version)
-        const impact =
-          Math.abs(
-            1 -
-              exchangeRate /
-                (tokenPrices[fromToken.symbol] / tokenPrices[toToken.symbol] ||
-                  1),
-          ) * 100;
-        if (impact < 1) setPriceImpact('Low');
-        else if (impact < 3) setPriceImpact('Medium');
-        else setPriceImpact('High');
-      } else {
-        setToAmount('');
-        setMinReceived('0');
-        setPriceImpact('Low');
-      }
-    } else if (!fromAmount) {
-      setToAmount('');
-      setMinReceived('0');
-      setPriceImpact('Low');
+      return {
+        toAmount: '',
+        minReceived: '0',
+        priceImpact: 'Low',
+      };
     }
+
+    const calculatedToAmount = (numericFromAmount * exchangeRate).toFixed(
+      decimals,
+    );
+    const slippageRate = 1 - slippageTolerance / 100;
+    const minReceived = (parseFloat(calculatedToAmount) * slippageRate).toFixed(
+      decimals,
+    );
+    const marketRate =
+      tokenPrices[fromToken.symbol] && tokenPrices[toToken.symbol]
+        ? tokenPrices[fromToken.symbol] / tokenPrices[toToken.symbol]
+        : undefined;
+    const impact =
+      marketRate && marketRate > 0
+        ? Math.abs(1 - exchangeRate / marketRate) * 100
+        : 0;
+
+    return {
+      toAmount: calculatedToAmount,
+      minReceived,
+      priceImpact: impact < 1 ? 'Low' : impact < 3 ? 'Medium' : 'High',
+    };
   }, [
-    fromAmount,
     exchangeRate,
+    fromAmount,
     fromToken,
-    toToken,
-    isCheckingSwapDetails,
-    tokenPrices,
     slippageTolerance,
+    toToken,
+    tokenPrices,
   ]);
 
-  // Check if swap can proceed
-  useEffect(() => {
-    if (!isConnected) {
-      return;
-    }
+  const isCheckingSwapDetails =
+    isConnected &&
+    Boolean(fromToken) &&
+    Boolean(toToken) &&
+    parseFloat(fromAmount) > 0 &&
+    isFromBalanceLoading;
 
+  const swapProceedDetails = useMemo(() => {
     if (!fromToken || !toToken) {
-      setSwapProceedDetails({ canProceed: false, message: 'Select tokens' });
-      setIsCheckingSwapDetails(false);
-      return;
+      return { canProceed: false, message: 'Select tokens' };
     }
 
     const numericFromAmount = parseFloat(fromAmount);
     if (isNaN(numericFromAmount) || numericFromAmount <= 0) {
-      setSwapProceedDetails({ canProceed: false, message: 'Enter an amount' });
-      setIsCheckingSwapDetails(false);
-      return;
+      return { canProceed: false, message: 'Enter an amount' };
     }
 
-    // Start checks
-    setIsCheckingSwapDetails(true);
+    if (!isConnected) {
+      return { canProceed: false, message: 'Connect wallet' };
+    }
 
-    const performChecks = async () => {
-      try {
-        if (isFromBalanceLoading) {
-          return;
-        }
+    if (isFromBalanceLoading) {
+      return { canProceed: false, message: 'Checking balance' };
+    }
 
-        if (!fromTokenBalance) {
-          setSwapProceedDetails({
-            canProceed: false,
-            message: 'Could not fetch balance',
-          });
-          setIsCheckingSwapDetails(false);
-          return;
-        }
+    if (!fromTokenBalance) {
+      return { canProceed: false, message: 'Could not fetch balance' };
+    }
 
-        // Add balance check
-        if (fromTokenBalance && fromAmount) {
-          const fromAmountBigInt = parseUnits(fromAmount, fromToken.decimals);
-          if (fromAmountBigInt > fromTokenBalance.value) {
-            setSwapProceedDetails({
-              canProceed: false,
-              message: 'Insufficient balance',
-            });
-            setIsCheckingSwapDetails(false);
-            return;
-          }
-        }
-
-        // Check if token is native ETH (no approval needed)
-        if (
-          fromToken?.symbol === 'ETH' ||
-          fromToken?.address === NATIVE_TOKEN_ADDRESS
-        ) {
-          setSwapProceedDetails({ canProceed: true, message: 'Swap' });
-          setIsCheckingSwapDetails(false);
-          return;
-        }
-
-        // Check if approval is needed
-        if (!isApproved) {
-          setSwapProceedDetails({ canProceed: true, message: 'Approve' });
-          setIsCheckingSwapDetails(false);
-          return;
-        }
-
-        setSwapProceedDetails({ canProceed: true, message: 'Swap' });
-      } catch (error) {
-        setSwapProceedDetails({
-          canProceed: false,
-          message: 'Error during checks',
-        });
-      } finally {
-        setIsCheckingSwapDetails(false);
+    try {
+      const fromAmountBigInt = parseUnits(fromAmount, fromToken.decimals);
+      if (fromAmountBigInt > fromTokenBalance.value) {
+        return { canProceed: false, message: 'Insufficient balance' };
       }
-    };
+    } catch (error) {
+      return { canProceed: false, message: 'Enter a valid amount' };
+    }
 
-    const checkTimeout = setTimeout(performChecks, 500);
-    return () => clearTimeout(checkTimeout);
+    const isNativeToken =
+      fromToken.symbol === 'ETH' || fromToken.address === NATIVE_TOKEN_ADDRESS;
+
+    if (!isNativeToken && !isApproved) {
+      return { canProceed: true, message: 'Approve' };
+    }
+
+    return { canProceed: true, message: 'Swap' };
   }, [
-    isConnected,
-    fromToken,
-    toToken,
     fromAmount,
+    fromToken,
     fromTokenBalance,
-    isFromBalanceLoading,
     isApproved,
+    isConnected,
+    isFromBalanceLoading,
+    toToken,
   ]);
 
-  // Update UI when swap is pending or successful
-  useEffect(() => {
-    if (isSwapLoading || isApproving) {
-      setIsExecutingSwap(true);
-    } else {
-      setIsExecutingSwap(false);
-    }
+  const isExecutingSwap = isSwapLoading || isApproving;
 
+  useEffect(() => {
     if (isSwapSuccess) {
-      // Reset form after successful swap if needed
       setFromAmount('');
-      setToAmount('');
     }
-  }, [isSwapLoading, isSwapSuccess, isApproving]);
-
-  // Debug approval process
-  useEffect(() => {
-    setApprovalDebugInfo(
-      `Approval Status - isApproved: ${isApproved}, isApproving: ${isApproving}, Token: ${
-        fromToken?.symbol
-      }, Address: ${fromToken?.address?.substring(0, 10) || 'none'}...`,
-    );
-  }, [isApproved, isApproving, fromToken]);
+  }, [isSwapSuccess]);
 
   // --- Event Handlers ---
   const handleFromAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -459,77 +351,32 @@ const Swap = () => {
   const handleTokenSelect = (selectedToken: TokenInfo) => {
     if (activeTokenField === 'from') {
       if (toToken?.symbol === selectedToken.symbol) {
-        setToToken(fromToken); // Swap them
-        setTokens((prev) => ({
-          ...prev,
-          receive: {
-            icon: fromToken?.icon || '/images/eth.svg',
-            name: fromToken?.symbol || 'ETH',
-          },
-        }));
+        setToToken(fromToken);
       }
       setFromToken(selectedToken);
-      setTokens((prev) => ({
-        ...prev,
-        pay: {
-          icon: selectedToken.icon || '/images/eth.svg',
-          name: selectedToken.symbol || 'TOKEN',
-        },
-      }));
     } else {
       if (fromToken?.symbol === selectedToken.symbol) {
-        setFromToken(toToken); // Swap them
-        setTokens((prev) => ({
-          ...prev,
-          pay: {
-            icon: toToken?.icon || '/images/usdt.svg',
-            name: toToken?.symbol || 'USDT',
-          },
-        }));
+        setFromToken(toToken);
       }
       setToToken(selectedToken);
-      setTokens((prev) => ({
-        ...prev,
-        receive: {
-          icon: selectedToken.icon || '/images/usdt.svg',
-          name: selectedToken.symbol || 'TOKEN',
-        },
-      }));
     }
     setModalOpen(false);
-    setFromAmount(''); // Reset amounts on token change
-    setToAmount('');
+    setFromAmount('');
   };
 
   const handleSwapTokensAndAmounts = () => {
-    // Swap tokens in the internal state
     const tempFromToken = fromToken;
     const tempToToken = toToken;
 
     setFromToken(tempToToken);
     setToToken(tempFromToken);
-
-    // Also update the UI tokens display
-    setTokens({
-      pay: {
-        icon: tempToToken?.icon || '/images/usdt.svg',
-        name: tempToToken?.symbol || 'USDT',
-      },
-      receive: {
-        icon: tempFromToken?.icon || '/images/eth.svg',
-        name: tempFromToken?.symbol || 'ETH',
-      },
-    });
-
-    setFromAmount(toAmount);
+    setFromAmount(swapQuote.toAmount);
   };
 
   const executeTransaction = () => {
     try {
       if (!isApproved && fromToken?.symbol !== 'ETH') {
-        // Make sure we're dealing with a token that needs approval (not ETH)
         if (fromToken?.address && fromToken.address !== NATIVE_TOKEN_ADDRESS) {
-          // Call approve directly without await - this is important for the wallet to trigger
           if (approve) {
             approve();
           }
@@ -552,15 +399,18 @@ const Swap = () => {
     }`;
   };
 
-  // Handle errors from contract interactions
+  const payTokenDisplay = {
+    icon: fromToken?.icon || '/images/tokens/eth.svg',
+    name: fromToken?.symbol || 'ETH',
+  };
+  const receiveTokenDisplay = {
+    icon: toToken?.icon || '/images/tokens/usdt.svg',
+    name: toToken?.symbol || 'USDT',
+  };
+
   useEffect(() => {
     if (approvalError) {
-      // Check specifically for user rejection
       if (isUserRejectionError(approvalError)) {
-        // Reset UI state without showing an error toast
-        setIsExecutingSwap(false);
-        setIsCheckingSwapDetails(false);
-        // Optionally show a neutral toast
         showToast({
           type: 'info',
           title: 'Transaction Cancelled',
@@ -568,7 +418,6 @@ const Swap = () => {
           duration: 3000,
         });
       } else {
-        // Handle actual errors
         let errorMessage = 'Failed to approve token. Please try again.';
 
         if (approvalError.message?.includes('insufficient funds')) {
@@ -586,12 +435,8 @@ const Swap = () => {
     }
 
     if (swapError) {
-      // Check specifically for user rejection
       if (isUserRejectionError(swapError)) {
-        // Reset UI state without showing an error toast
-        setIsExecutingSwap(false);
-        setIsCheckingSwapDetails(false);
-        // Optionally show a neutral toast
+       
         showToast({
           type: 'info',
           title: 'Transaction Cancelled',
@@ -679,8 +524,13 @@ const Swap = () => {
                 onClick={() => openTokenSelectionModal('from')}
               >
                 <div className="icon">
-                  <Image src={tokens.pay.icon} alt="" width={24} height={24} />
-                  <span>{tokens.pay.name}</span>
+                  <Image
+                    src={payTokenDisplay.icon}
+                    alt=""
+                    width={24}
+                    height={24}
+                  />
+                  <span>{payTokenDisplay.name}</span>
                 </div>
               </button>
             </div>
@@ -699,7 +549,7 @@ const Swap = () => {
                 <input
                   type="text"
                   placeholder="0.00"
-                  value={toAmount}
+                  value={swapQuote.toAmount}
                   readOnly
                   disabled={isCheckingSwapDetails || isExecutingSwap}
                 />
@@ -710,12 +560,12 @@ const Swap = () => {
               >
                 <div className="icon">
                   <Image
-                    src={tokens.receive.icon}
+                    src={receiveTokenDisplay.icon}
                     alt=""
                     width={24}
                     height={24}
                   />
-                  <span>{tokens.receive.name}</span>
+                  <span>{receiveTokenDisplay.name}</span>
                 </div>
               </button>
             </div>
@@ -728,12 +578,12 @@ const Swap = () => {
             <div className="slippage">
               <div className="label">Min received</div>
               <div className="value">
-                {minReceived} {toToken?.symbol}
+                {swapQuote.minReceived} {toToken?.symbol}
               </div>
             </div>
             <div className="slippage">
               <div className="label">Price impact</div>
-              <div className="value">{priceImpact}</div>
+              <div className="value">{swapQuote.priceImpact}</div>
             </div>
             <div className="slippage">
               <div className="label">Order Routing</div>
@@ -744,8 +594,10 @@ const Swap = () => {
             inputAmount={fromAmount}
             isCheckingDetails={isCheckingSwapDetails}
             proceedDetails={swapProceedDetails}
-            isExecutingSwap={isExecutingSwap || isApproving || isSwapLoading}
+            isExecutingSwap={isExecutingSwap}
             onProceed={executeTransaction}
+            fromTokenSymbol={fromToken?.symbol}
+            toTokenSymbol={toToken?.symbol}
           />
 
           <SelectTokenModal

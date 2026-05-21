@@ -2,75 +2,199 @@
 
 import Link from 'next/link';
 import Image, { StaticImageData } from 'next/image';
-import { useState } from 'react';
-import { usePrices } from '@/contexts/PriceContext';
+import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  buildFeedChartData,
-  FeedChartPoint,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts';
+import apiService from '@/lib/api';
+import {
+  buildDataFeedRowsFromFeeds,
+  DataFeedRow,
   FeedTimeRange,
-  formatCompactCurrency,
   formatFeedChange,
   formatFeedPrice,
-  getDataFeedBySlug,
   getFeedBadgeLabel,
 } from '@/lib/data-feeds';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface ChartPoint {
+  label: string;
+  value: number;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 const ranges: FeedTimeRange[] = ['live', '1h', '1d', '1w', '1m'];
 
-function buildChartPath(points: FeedChartPoint[], width: number, height: number) {
-  if (points.length === 0) return '';
+const RANGE_POLL_INTERVAL_MS = 60_000; // 1 minute
 
-  const values = points.map((point) => point.value);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const spread = max - min || max || 1;
+function getRangeWindow(range: FeedTimeRange): { from: Date; to: Date } {
+  const to = new Date();
+  const from = new Date(to);
 
-  return points
-    .map((point, index) => {
-      const x = (index / Math.max(points.length - 1, 1)) * width;
-      const normalized = (point.value - min) / spread;
-      const y = height - normalized * height;
-      return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
-    })
-    .join(' ');
+  switch (range) {
+    case 'live': from.setMinutes(from.getMinutes() - 30); break;
+    case '1h':   from.setHours(from.getHours() - 1);     break;
+    case '1d':   from.setDate(from.getDate() - 1);        break;
+    case '1w':   from.setDate(from.getDate() - 7);        break;
+    case '1m':   from.setMonth(from.getMonth() - 1);      break;
+  }
+
+  return { from, to };
 }
 
-function buildAreaPath(points: FeedChartPoint[], width: number, height: number) {
-  if (points.length === 0) return '';
-
-  const linePath = buildChartPath(points, width, height);
-  return `${linePath} L ${width} ${height} L 0 ${height} Z`;
+function formatLabel(ts: string, range: FeedTimeRange): string {
+  const d = new Date(ts);
+  if (range === 'live' || range === '1h') {
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  if (range === '1d') {
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
+
+// ─── Custom tooltip ───────────────────────────────────────────────────────────
+
+const ChartTooltip = ({
+  active,
+  payload,
+  label,
+  answerPrefix,
+}: {
+  active?: boolean;
+  payload?: { value: number }[];
+  label?: string;
+  answerPrefix: string;
+}) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="chart-tooltip">
+      <span className="chart-tooltip-time">{label}</span>
+      <span className="chart-tooltip-value">
+        {answerPrefix}{formatFeedPrice(payload[0].value)}
+      </span>
+    </div>
+  );
+};
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const DataFeedDetail = ({ slug }: { slug: string }) => {
-  const { prices, loading } = usePrices();
+  const searchParams = useSearchParams();
   const [activeRange, setActiveRange] = useState<FeedTimeRange>('live');
+  const [apiRow, setApiRow] = useState<DataFeedRow | null>(null);
+  const [apiLoading, setApiLoading] = useState(true);
+  const [chartPoints, setChartPoints] = useState<ChartPoint[]>([]);
+  const [chartLoading, setChartLoading] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const row = getDataFeedBySlug(prices, slug);
+  const assetId = searchParams.get('asset');
+  const chainId = searchParams.get('chain');
 
-  const renderFeedIcon = (
-    symbol: string,
-    icon?: string | StaticImageData,
-  ) => {
+  // ── Fetch the feed row ──────────────────────────────────────────────────────
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchApiRow = async () => {
+      try {
+        const feeds = await apiService.getFeeds();
+        const paramAsset = searchParams.get('asset');
+        const paramChain = searchParams.get('chain');
+        const row = buildDataFeedRowsFromFeeds(feeds).find((feedRow) =>
+          paramAsset && paramChain
+            ? feedRow.assetId === paramAsset && feedRow.chainId === paramChain
+            : feedRow.feedId.toLowerCase().includes(slug.toLowerCase()),
+        );
+        if (isMounted) setApiRow(row || null);
+      } catch {
+        if (isMounted) setApiRow(null);
+      } finally {
+        if (isMounted) setApiLoading(false);
+      }
+    };
+
+    fetchApiRow();
+    return () => { isMounted = false; };
+  }, [assetId, chainId, slug]);
+
+  // ── Fetch chart data ────────────────────────────────────────────────────────
+  const fetchChartData = useCallback(async (range: FeedTimeRange, rowAssetId?: string) => {
+    setChartLoading(true);
+    try {
+      const { from, to } = getRangeWindow(range);
+      const points = await apiService.getAuditPrices(
+        from.toISOString(),
+        to.toISOString(),
+        rowAssetId,
+      );
+
+      console.log('[fetchChartData] raw points count:', points.length, 'sample:', points[0]);
+
+      const mapped: ChartPoint[] = points
+        .filter((p) => p.value && p.timestamp)
+        .map((p) => ({
+          label: formatLabel(p.timestamp, range),
+          value: p.value * Math.pow(10, p.expo ?? 0),
+        }));
+
+      console.log('[fetchChartData] mapped points count:', mapped.length, 'sample:', mapped[0]);
+
+      setChartPoints(mapped);
+    } catch {
+      setChartPoints([]);
+    } finally {
+      setChartLoading(false);
+    }
+  }, []);
+
+  // ── Wire up polling ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!apiRow) return;
+
+    // Clear any existing poll
+    if (pollRef.current) clearInterval(pollRef.current);
+
+    fetchChartData(activeRange, apiRow.assetId);
+
+    if (activeRange === 'live') {
+      pollRef.current = setInterval(() => {
+        fetchChartData('live', apiRow.assetId);
+      }, RANGE_POLL_INTERVAL_MS);
+    }
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [activeRange, apiRow, fetchChartData]);
+
+  // ── Render helpers ──────────────────────────────────────────────────────────
+  const renderFeedIcon = (symbol: string, icon?: string | StaticImageData) => {
+    if (typeof icon === 'string' && icon.startsWith('http')) {
+      return <img src={icon} alt={symbol} width={28} height={28} />;
+    }
     if (icon) {
       return <Image src={icon} alt={symbol} width={28} height={28} />;
     }
-
     return (
-      <span className="feed-detail-fallback-icon">
-        {getFeedBadgeLabel(symbol)}
-      </span>
+      <span className="feed-detail-fallback-icon">{getFeedBadgeLabel(symbol)}</span>
     );
   };
 
-  if (!loading && !row) {
+  // ── Empty / loading states ──────────────────────────────────────────────────
+  if (!apiLoading && !apiRow) {
     return (
       <section className="data-feed-detail-page">
         <div className="data-feed-detail-shell">
-          <Link href="/data-feeds" className="back-link">
-            Back to Data Feeds
-          </Link>
-
+          <Link href="/data-feeds" className="back-link">Back to Data Feeds</Link>
           <div className="detail-empty-state">
             <h1>Dataset not found</h1>
             <p>The feed you requested is not available in the current dataset.</p>
@@ -80,7 +204,7 @@ const DataFeedDetail = ({ slug }: { slug: string }) => {
     );
   }
 
-  if (!row) {
+  if (!apiRow) {
     return (
       <section className="data-feed-detail-page">
         <div className="data-feed-detail-shell">
@@ -90,23 +214,14 @@ const DataFeedDetail = ({ slug }: { slug: string }) => {
     );
   }
 
-  const chartPoints = buildFeedChartData(row, activeRange);
-  const linePath = buildChartPath(chartPoints, 100, 100);
-  const areaPath = buildAreaPath(chartPoints, 100, 100);
-  const values = chartPoints.map((point) => point.value);
-  const minValue = Math.min(...values);
-  const maxValue = Math.max(...values);
-  const midValue = (minValue + maxValue) / 2;
+  const row = apiRow;
   const isPositive = row.changePct >= 0;
-  const liquidityEstimate = Math.max(row.price, 1) * 850000;
-  const coverageEstimate = Math.max(row.price, 1) * 2150000;
+  const formattedAnswer = `${row.answerPrefix}${formatFeedPrice(row.price)}`;
 
   return (
     <section className="data-feed-detail-page">
       <div className="data-feed-detail-shell">
-        <Link href="/data-feeds" className="back-link">
-          Back to Data Feeds
-        </Link>
+        <Link href="/data-feeds" className="back-link">Back to Data Feeds</Link>
 
         <div className="detail-header">
           <div className="detail-title">
@@ -151,7 +266,7 @@ const DataFeedDetail = ({ slug }: { slug: string }) => {
 
           <div className="detail-stat-card">
             <span>Current answer</span>
-            <strong>${formatFeedPrice(row.price)}</strong>
+            <strong>{formattedAnswer}</strong>
           </div>
 
           <div className="detail-stat-card">
@@ -160,18 +275,9 @@ const DataFeedDetail = ({ slug }: { slug: string }) => {
               {formatFeedChange(row.changePct)}
             </strong>
           </div>
-
-          <div className="detail-stat-card">
-            <span>Liquidity estimate</span>
-            <strong>{formatCompactCurrency(liquidityEstimate)}</strong>
-          </div>
-
-          <div className="detail-stat-card">
-            <span>Coverage estimate</span>
-            <strong>{formatCompactCurrency(coverageEstimate)}</strong>
-          </div>
         </div>
 
+        {/* ── Chart ──────────────────────────────────────────────────────── */}
         <div className="detail-chart-shell">
           <div className="range-tabs">
             {ranges.map((range) => (
@@ -187,39 +293,76 @@ const DataFeedDetail = ({ slug }: { slug: string }) => {
           </div>
 
           <div className="chart-card">
-            <div className="chart-grid">
-              {[maxValue, midValue, minValue].map((value) => (
-                <div className="chart-grid-line" key={value}>
-                  <span>${formatFeedPrice(value)}</span>
-                </div>
-              ))}
-            </div>
+            {chartLoading ? (
+              <div className="chart-loading">
+                <div className="chart-skeleton" />
+              </div>
+            ) : chartPoints.length === 0 ? (
+              <div className="chart-empty">No price history available for this range.</div>
+            ) : (
+              <ResponsiveContainer width="100%" height={260}>
+                <AreaChart
+                  data={chartPoints}
+                  margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="feedGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="rgba(217, 198, 255, 0.55)" />
+                      <stop offset="100%" stopColor="rgba(217, 198, 255, 0.02)" />
+                    </linearGradient>
+                  </defs>
 
-            <div className="chart-stage">
-              <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="feedAreaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="rgba(217, 198, 255, 0.72)" />
-                    <stop offset="100%" stopColor="rgba(217, 198, 255, 0.04)" />
-                  </linearGradient>
-                </defs>
-                <path d={areaPath} fill="url(#feedAreaGradient)" />
-                <path
-                  d={linePath}
-                  fill="none"
-                  stroke="#d9c6ff"
-                  strokeWidth="1.4"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="rgba(255,255,255,0.05)"
+                    vertical={false}
+                  />
 
-            <div className="chart-labels">
-              {chartPoints.map((point) => (
-                <span key={point.label}>{point.label}</span>
-              ))}
-            </div>
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fill: '#666', fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                    minTickGap={40}
+                  />
+
+                  <YAxis
+                    tick={{ fill: '#666', fontSize: 11 }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(v) => `${row.answerPrefix}${formatFeedPrice(v)}`}
+                    width={72}
+                    domain={['auto', 'auto']}
+                  />
+
+                  <Tooltip
+                    content={
+                      <ChartTooltip answerPrefix={row.answerPrefix} />
+                    }
+                    cursor={{ stroke: 'rgba(217,198,255,0.3)', strokeWidth: 1 }}
+                  />
+
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="#d9c6ff"
+                    strokeWidth={1.5}
+                    fill="url(#feedGradient)"
+                    dot={false}
+                    activeDot={{ r: 4, fill: '#d9c6ff', strokeWidth: 0 }}
+                    isAnimationActive={activeRange !== 'live'}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+
+            {activeRange === 'live' && !chartLoading && (
+              <div className="chart-live-badge">
+                <span className="live-dot" />
+                Live · updates every minute
+              </div>
+            )}
           </div>
         </div>
       </div>

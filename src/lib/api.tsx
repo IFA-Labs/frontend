@@ -44,6 +44,49 @@ export interface TokenPrice {
   icon: string | StaticImageData;
 }
 
+export interface OracleFeed {
+  feed: string;
+  svr_enabled: boolean;
+  network: string;
+  answer: number;
+  deviation_threshold: number;
+  heartbeat: number;
+  asset_class: string;
+  categories: string[];
+  asset_id: string;
+  chain_id: string;
+  asset_logo_url?: string;
+  chain_logo_url?: string;
+  last_updated?: string;
+}
+
+export interface OracleFeedsResponse {
+  data: OracleFeed[];
+}
+
+export interface AuditPricePoint {
+  timestamp: string;
+  value: number;
+  expo: number;
+}
+
+export interface FeedRequestPayload {
+  name: string;
+  project_name: string;
+  email: string;
+  supported_blockchains: string[];
+  symbols: string[];
+  message: string;
+  website?: string;
+}
+
+export interface FeedRequestResponse extends FeedRequestPayload {
+  id: string;
+  archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 class ApiService {
   private static instance: ApiService;
   private assetCache: Asset[] | null = null;
@@ -58,8 +101,10 @@ class ApiService {
   > = new Map();
   private allPricesCache: { data: TokenPrice[]; timestamp: number } | null =
     null;
+  private feedsCache: { data: OracleFeed[]; timestamp: number } | null = null;
   private readonly PRICE_CACHE_TTL = 5000;
   private readonly ALL_PRICES_CACHE_TTL = 10000;
+  private readonly FEEDS_CACHE_TTL = 10000;
 
   private constructor() {}
 
@@ -182,7 +227,58 @@ class ApiService {
     return result;
   }
 
-  async getAuditPrices(fromISO: string, toISO: string, assetId?: string) {
+  async getFeeds(params?: {
+    network?: string;
+    category?: string;
+  }): Promise<OracleFeed[]> {
+    const hasParams = Boolean(params?.network || params?.category);
+
+    if (
+      !hasParams &&
+      this.feedsCache &&
+      Date.now() - this.feedsCache.timestamp < this.FEEDS_CACHE_TTL
+    ) {
+      return this.feedsCache.data;
+    }
+
+    const response = await axios.get<OracleFeedsResponse>(
+      `${API_BASE_URL}/feeds`,
+      {
+        params: {
+          network: params?.network,
+          category: params?.category,
+        },
+      },
+    );
+
+    const data = response.data.data || [];
+
+    if (!hasParams) {
+      this.feedsCache = {
+        data,
+        timestamp: Date.now(),
+      };
+    }
+
+    return data;
+  }
+
+  async submitFeedRequest(
+    payload: FeedRequestPayload,
+  ): Promise<FeedRequestResponse> {
+    const response = await axios.post<FeedRequestResponse>(
+      `${API_BASE_URL}/feed-requests`,
+      payload,
+    );
+
+    return response.data;
+  }
+
+  async getAuditPrices(
+    fromISO: string,
+    toISO: string,
+    assetId?: string,
+  ): Promise<AuditPricePoint[]> {
     try {
       const url = `${API_BASE_URL}/prices/audit?from=${encodeURIComponent(
         fromISO,
@@ -190,9 +286,26 @@ class ApiService {
         assetId ? `&asset=${encodeURIComponent(assetId)}` : ''
       }`;
       const response = await axios.get(url);
-      return response.data;
-    } catch (error) {
-      throw error;
+      const raw = response.data;
+
+      // Log the raw shape once so we can inspect it
+      console.log('[getAuditPrices] raw response:', JSON.stringify(raw)?.slice(0, 400));
+
+      // Handle both array-direct and wrapped `{ data: [...] }` shapes
+      const list: unknown[] = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw?.data)
+        ? raw.data
+        : [];
+
+      return list.map((item: any) => ({
+        timestamp: item.timestamp ?? item.time ?? item.created_at ?? '',
+        value: item.value ?? item.price ?? 0,
+        expo: item.expo ?? 0,
+      }));
+    } catch (err) {
+      console.error('[getAuditPrices] error:', err);
+      return [];
     }
   }
 

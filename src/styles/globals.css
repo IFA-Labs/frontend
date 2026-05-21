@@ -33,13 +33,25 @@ html {
 
 body {
   background: #000000;
-  font-family: var(--font-inter);
+  font-family: 'Inter', sans-serif;
 }
 
 input {
-  font-family: var(--font-inter);
+  font-family: 'Inter', sans-serif;
   outline: none;
   border: none;
+  color-scheme: dark;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #000 inset !important;
+  box-shadow: 0 0 0 1000px #000 inset !important;
+  -webkit-text-fill-color: #fff !important;
+  caret-color: #fff;
+  transition: background-color 9999s ease-in-out 0s !important;
 }
 
 button {

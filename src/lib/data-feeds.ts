@@ -1,14 +1,17 @@
 import { StaticImageData } from 'next/image';
-import { TokenPrice } from '@/lib/api';
+import { OracleFeed, TokenPrice } from '@/lib/api';
 import { tokenList } from '@/lib/tokens';
 
 export interface FeedDefinition {
   baseSymbol: string;
+  symbol?: string;
   network: string;
   assetClass: string;
-  category: 'Stablecoin' | 'Crypto' | 'FX';
+  category: 'Stablecoin' | 'Crypto' | 'Fiat' | 'Newly launched' | 'SVR-enabled';
   deviationThreshold: string;
   heartbeat: string;
+  answerPrefix?: string;
+  seedPrice?: number;
   feedId?: string;
   oracleRoute?: string;
   precision?: string;
@@ -25,9 +28,16 @@ export interface DataFeedRow {
   category: FeedDefinition['category'];
   deviationThreshold: string;
   heartbeat: string;
+  answerPrefix: string;
   feedId: string;
   oracleRoute: string;
   precision: string;
+  assetId?: string;
+  chainId?: string;
+  chainLogoUrl?: string;
+  lastUpdated?: string;
+  categories: string[];
+  svrEnabled?: boolean;
   icon?: string | StaticImageData;
 }
 
@@ -38,17 +48,98 @@ export interface FeedChartPoint {
   value: number;
 }
 
-export const HOME_FEED_PRIORITY = ['CNGN', 'BRZ', 'ZARP', 'USDC'] as const;
+export const HOME_FEED_PRIORITY = [
+  'CNGN',
+  'BRZ',
+  'ZARP',
+  'USDC',
+  'ETH',
+  'USDT',
+] as const;
 export const HOME_FEED_LIMIT = 6;
 
 const FEED_DEFINITIONS: Record<string, FeedDefinition> = {
+  BTC: {
+    baseSymbol: 'BTC',
+    symbol: 'BTC/USD',
+    network: 'Ethereum Mainnet',
+    assetClass: 'Crypto',
+    category: 'SVR-enabled',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 94066.62,
+    feedId: 'BTC-USD-Ethereum-SVR-001',
+    oracleRoute: 'BTC/USD reference price',
+    precision: '8 decimals',
+  },
+  ETHBTC: {
+    baseSymbol: 'ETHBTC',
+    symbol: 'ETH / BTC',
+    network: 'Ethereum Mainnet',
+    assetClass: 'Crypto',
+    category: 'Crypto',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '₿',
+    seedPrice: 0.02405614,
+    feedId: 'ETH-BTC-Ethereum-001',
+    oracleRoute: 'ETH/BTC reference price',
+    precision: '8 decimals',
+    icon: '/images/icons/eth.svg',
+  },
+  ARB: {
+    baseSymbol: 'ARB',
+    symbol: 'ARB/USD',
+    network: 'Arbitrum Mainnet',
+    assetClass: 'Crypto',
+    category: 'Newly launched',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 0.42,
+    feedId: 'ARB-USD-Arbitrum-001',
+    oracleRoute: 'ARB/USD reference price',
+    precision: '8 decimals',
+  },
+  BNB: {
+    baseSymbol: 'BNB',
+    symbol: 'BNB/USD',
+    network: 'BNB Chain Mainnet',
+    assetClass: 'Crypto',
+    category: 'Crypto',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 602.18,
+    feedId: 'BNB-USD-BNB-001',
+    oracleRoute: 'BNB/USD reference price',
+    precision: '8 decimals',
+  },
+  POL: {
+    baseSymbol: 'POL',
+    symbol: 'POL/USD',
+    network: 'Polygon Mainnet',
+    assetClass: 'Crypto',
+    category: 'Crypto',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 0.22,
+    feedId: 'POL-USD-Polygon-001',
+    oracleRoute: 'POL/USD reference price',
+    precision: '8 decimals',
+  },
   CNGN: {
     baseSymbol: 'CNGN',
+    symbol: 'CNGN/USD',
     network: 'Base Mainnet',
-    assetClass: 'Stablecoin',
-    category: 'Stablecoin',
-    deviationThreshold: '0.25%',
-    heartbeat: '00:05:00',
+    assetClass: 'Fiat',
+    category: 'Fiat',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 0.00065,
     feedId: 'CNGN-USD-Base-001',
     oracleRoute: 'NGN/USD stablecoin reference',
     precision: '8 decimals',
@@ -56,11 +147,14 @@ const FEED_DEFINITIONS: Record<string, FeedDefinition> = {
   },
   BRZ: {
     baseSymbol: 'BRZ',
+    symbol: 'BRZ/USD',
     network: 'Base Mainnet',
-    assetClass: 'Stablecoin',
-    category: 'Stablecoin',
-    deviationThreshold: '0.25%',
-    heartbeat: '00:05:00',
+    assetClass: 'Fiat',
+    category: 'Fiat',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 0.18,
     feedId: 'BRZ-USD-Base-001',
     oracleRoute: 'BRL/USD stablecoin reference',
     precision: '8 decimals',
@@ -68,11 +162,14 @@ const FEED_DEFINITIONS: Record<string, FeedDefinition> = {
   },
   ZARP: {
     baseSymbol: 'ZARP',
+    symbol: 'ZARP/USD',
     network: 'Base Mainnet',
-    assetClass: 'Stablecoin',
-    category: 'Stablecoin',
-    deviationThreshold: '0.25%',
-    heartbeat: '00:05:00',
+    assetClass: 'Fiat',
+    category: 'Fiat',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 0.054,
     feedId: 'ZARP-USD-Base-001',
     oracleRoute: 'ZAR/USD stablecoin reference',
     precision: '8 decimals',
@@ -80,11 +177,14 @@ const FEED_DEFINITIONS: Record<string, FeedDefinition> = {
   },
   USDC: {
     baseSymbol: 'USDC',
+    symbol: 'USDC/USD',
     network: 'Base Mainnet',
     assetClass: 'Stablecoin',
     category: 'Stablecoin',
-    deviationThreshold: '0.15%',
-    heartbeat: '00:02:00',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 1,
     feedId: 'USDC-USD-Base-001',
     oracleRoute: 'USD/USD stablecoin reference',
     precision: '8 decimals',
@@ -92,11 +192,14 @@ const FEED_DEFINITIONS: Record<string, FeedDefinition> = {
   },
   USDT: {
     baseSymbol: 'USDT',
+    symbol: 'USDT/USD',
     network: 'Base Mainnet',
     assetClass: 'Stablecoin',
     category: 'Stablecoin',
-    deviationThreshold: '0.15%',
-    heartbeat: '00:02:00',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 1,
     feedId: 'USDT-USD-Base-001',
     oracleRoute: 'USD/USD stablecoin reference',
     precision: '8 decimals',
@@ -104,11 +207,14 @@ const FEED_DEFINITIONS: Record<string, FeedDefinition> = {
   },
   ETH: {
     baseSymbol: 'ETH',
+    symbol: 'ETH/USD',
     network: 'Ethereum Mainnet',
     assetClass: 'Crypto',
     category: 'Crypto',
-    deviationThreshold: '0.50%',
-    heartbeat: '00:01:00',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 2265.14,
     feedId: 'ETH-USD-Ethereum-001',
     oracleRoute: 'ETH/USD reference price',
     precision: '8 decimals',
@@ -121,6 +227,52 @@ const DEFAULT_CRYPTO_NETWORK = 'Ethereum Mainnet';
 
 function getBaseSymbol(symbol: string): string {
   return symbol.split('/')[0]?.toUpperCase() || symbol.toUpperCase();
+}
+
+function formatTitleLabel(value: string): string {
+  return value
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function formatNetworkLabel(network: string): string {
+  const normalized = network.toLowerCase();
+
+  if (normalized === 'base-mainnet') return 'Base Mainnet';
+  if (normalized === 'base-testnet') return 'Base Testnet';
+  if (normalized === 'assetchain-mainnet') return 'Assetchain Mainnet';
+  if (normalized === 'mantle-testnet') return 'Mantle Testnet';
+
+  return formatTitleLabel(network);
+}
+
+function formatHeartbeat(seconds: number): string {
+  if (!seconds) return '00:00:00';
+
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  return [hours, minutes, remainingSeconds]
+    .map((value) => String(value).padStart(2, '0'))
+    .join(':');
+}
+
+function formatDeviationThreshold(value: number): string {
+  return `${Number.isInteger(value) ? value : value.toFixed(2)}%`;
+}
+
+function inferAnswerPrefix(symbol: string): string {
+  const quoteSymbol = symbol.split('/')[1]?.trim().toUpperCase();
+
+  if (quoteSymbol === 'BTC') return '₿';
+  return '$';
+}
+
+function getFeedIcon(baseSymbol: string, icon?: string) {
+  return tokenList[baseSymbol]?.icon || icon;
 }
 
 function inferCategory(baseSymbol: string): FeedDefinition['category'] {
@@ -144,6 +296,7 @@ function buildDefaultDefinition(baseSymbol: string): FeedDefinition {
     category,
     deviationThreshold: category === 'Crypto' ? '0.50%' : '0.25%',
     heartbeat: category === 'Crypto' ? '00:01:00' : '00:05:00',
+    answerPrefix: '$',
     feedId: `${baseSymbol}-USD-Oracle-001`,
     oracleRoute: `${baseSymbol}/USD reference price`,
     precision: '8 decimals',
@@ -190,24 +343,69 @@ export function buildDataFeedRows(prices: TokenPrice[]): DataFeedRow[] {
 
       return {
         baseSymbol,
-        symbol: livePrice?.symbol || `${baseSymbol}/USD`,
-        price: livePrice?.price || 0,
+        symbol: definition.symbol || livePrice?.symbol || `${baseSymbol}/USD`,
+        price: livePrice?.price || definition.seedPrice || 0,
         changePct: livePrice?.change_7d_pct || 0,
         network: definition.network,
         assetClass: definition.assetClass,
         category: definition.category,
         deviationThreshold: definition.deviationThreshold,
         heartbeat: definition.heartbeat,
+        answerPrefix: definition.answerPrefix || '$',
         feedId: definition.feedId || `${baseSymbol}-USD-Oracle-001`,
-        oracleRoute: definition.oracleRoute || `${baseSymbol}/USD reference price`,
+        oracleRoute:
+          definition.oracleRoute || `${baseSymbol}/USD reference price`,
         precision: definition.precision || '8 decimals',
+        categories: [definition.category],
         icon: livePrice?.icon || definition.icon,
       };
     });
 }
 
+export function buildDataFeedRowsFromFeeds(feeds: OracleFeed[]): DataFeedRow[] {
+  return feeds.map((feed) => {
+    const baseSymbol = getBaseSymbol(feed.feed);
+    const category = formatTitleLabel(
+      feed.asset_class || feed.categories?.[0] || 'Crypto',
+    ) as FeedDefinition['category'];
+
+    return {
+      baseSymbol: `${baseSymbol}-${feed.chain_id}`,
+      symbol: feed.feed,
+      price: feed.answer || 0,
+      changePct: 0,
+      network: formatNetworkLabel(feed.network),
+      assetClass: formatTitleLabel(feed.asset_class || 'Crypto'),
+      category,
+      deviationThreshold: formatDeviationThreshold(feed.deviation_threshold),
+      heartbeat: formatHeartbeat(feed.heartbeat),
+      answerPrefix: inferAnswerPrefix(feed.feed),
+      feedId: `${feed.asset_id}-${feed.chain_id}`,
+      oracleRoute: `${feed.feed} on ${formatNetworkLabel(feed.network)}`,
+      precision: '8 decimals',
+      assetId: feed.asset_id,
+      chainId: feed.chain_id,
+      chainLogoUrl: feed.chain_logo_url,
+      lastUpdated: feed.last_updated,
+      categories: [
+        category,
+        ...(feed.svr_enabled ? ['SVR-enabled'] : []),
+        ...(feed.categories || []).map(formatTitleLabel),
+      ],
+      svrEnabled: feed.svr_enabled,
+      icon: getFeedIcon(baseSymbol, feed.asset_logo_url),
+    };
+  });
+}
+
 export function getHomeFeedRows(prices: TokenPrice[]): DataFeedRow[] {
-  return buildDataFeedRows(prices).slice(0, HOME_FEED_LIMIT);
+  const rowsBySymbol = new Map(
+    buildDataFeedRows(prices).map((row) => [row.baseSymbol, row]),
+  );
+
+  return HOME_FEED_PRIORITY.map((symbol) => rowsBySymbol.get(symbol)).filter(
+    (row): row is DataFeedRow => Boolean(row),
+  );
 }
 
 export function formatFeedPrice(price: number): string {
@@ -275,7 +473,9 @@ export function buildFeedChartData(
 
   return labels.map((label, index) => ({
     label,
-    value: safePrice * (profile[index] + volatilityBoost * (index % 2 === 0 ? -0.4 : 0.6)),
+    value:
+      safePrice *
+      (profile[index] + volatilityBoost * (index % 2 === 0 ? -0.4 : 0.6)),
   }));
 }
 

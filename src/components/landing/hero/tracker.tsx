@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { LockIcon } from '../../svg';
+
+import { useState } from 'react';
 import { usePrices } from '@/contexts/PriceContext';
+import { ArrowRightIcon, SearchIcon } from '@/components/svg';
 import { StaticImageData } from 'next/image';
 import Image from 'next/image';
 import {
@@ -14,12 +16,16 @@ import {
 
 const CryptoTracker: React.FC = () => {
   const { prices, loading } = usePrices();
-  const cryptoData = getHomeFeedRows(prices);
+  const [searchQuery, setSearchQuery] = useState('');
+  const allRows = getHomeFeedRows(prices);
+  const cryptoData = searchQuery.trim()
+    ? allRows.filter((row) =>
+        row.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        row.baseSymbol.toLowerCase().includes(searchQuery.toLowerCase()),
+      )
+    : allRows;
 
-  const renderFeedIcon = (
-    symbol: string,
-    icon?: string | StaticImageData,
-  ) => {
+  const renderFeedIcon = (symbol: string, icon?: string | StaticImageData) => {
     if (icon) {
       return (
         <Image
@@ -32,18 +38,29 @@ const CryptoTracker: React.FC = () => {
       );
     }
 
-    return <span className="fallback-feed-icon">{getFeedBadgeLabel(symbol)}</span>;
+    return (
+      <span className="fallback-feed-icon">{getFeedBadgeLabel(symbol)}</span>
+    );
   };
 
   return (
     <div className="crypto-tracker">
       <div className="tracker-topbar">
-        <div className="price-wrapper">
-          <h3>
-            <LockIcon />
-            Rate by IFÁ LABS
-          </h3>
+        <div className="search-container">
+          <div className="search-icon">
+            <SearchIcon />
+          </div>
+          <input
+            type="text"
+            placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
+        <Link href="/data-feeds" className="view-all-feeds">
+          View all
+          <ArrowRightIcon />
+        </Link>
       </div>
 
       <div className="table-header">
@@ -70,29 +87,39 @@ const CryptoTracker: React.FC = () => {
         </div>
       ) : (
         <div className="crypto-list">
-          {cryptoData.map((crypto, index) => {
-            const isPositive = crypto.changePct >= 0;
+          {cryptoData.length === 0 ? (
+            <div className="tracker-empty-state">
+              <p>Data feed not available</p>
+              <Link href="/request-data-field" className="tracker-request-cta">
+                Send a request
+                <ArrowRightIcon />
+              </Link>
+            </div>
+          ) : (
+            cryptoData.map((crypto, index) => {
+              const isPositive = crypto.changePct >= 0;
 
-            return (
-              <div className="crypto-item" key={index}>
-                <div className="column symbol">
-                  {renderFeedIcon(crypto.baseSymbol, crypto.icon)}
-                  {crypto.symbol}
+              return (
+                <div className="crypto-item" key={index}>
+                  <div className="column symbol">
+                    {renderFeedIcon(crypto.baseSymbol, crypto.icon)}
+                    {crypto.symbol}
+                  </div>
+                  <div className="column price">
+                    ${formatFeedPrice(crypto.price)}
+                  </div>
+                  <div
+                    className={`column change ${
+                      isPositive ? 'positive' : 'negative'
+                    }`}
+                  >
+                    <span className="change-arrow">{isPositive ? '▲' : '▼'}</span>
+                    {formatFeedChange(crypto.changePct)}
+                  </div>
                 </div>
-                <div className="column price">
-                  ${formatFeedPrice(crypto.price)}
-                </div>
-                <div
-                  className={`column change ${
-                    isPositive ? 'positive' : 'negative'
-                  }`}
-                >
-                  <span className="change-arrow">{isPositive ? '▲' : '▼'}</span>
-                  {formatFeedChange(crypto.changePct)}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       )}
     </div>

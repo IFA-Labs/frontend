@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import Swap from '@/components/app/swap';
 import Navbar from '@/components/app/navbar';
 import { Metadata } from 'next';
@@ -22,7 +22,9 @@ const SwapPage = () => {
   return (
     <div>
       <Navbar />
-      <Swap />
+      <Suspense fallback={null}>
+        <Swap />
+      </Suspense>
     </div>
   );
 };

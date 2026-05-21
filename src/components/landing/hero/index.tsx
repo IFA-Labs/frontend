@@ -1,8 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import Calculator from './calculator';
-import Image from 'next/image';
-import { ArrowRightIcon } from '../../svg';
+import { ArrowRightIcon , LockIcon} from '../../svg';
 import HeroIllustration from '../../../../public/images/hero-illustration.svg';
 
 import { ZarpLogo, BaseLogo, CngnLogo, MantleLogo } from '../../svg';
@@ -48,6 +47,12 @@ const Hero = () => {
 
         <div className="widget-container">
           <TabToggle activeTab={activeTab} setActiveTab={setActiveTab} />
+          <div className="price-wrapper">
+            <h3>
+              <LockIcon />
+              Rate by IFÁ LABS
+            </h3>
+          </div>
           {activeTab === 'crypto' ? <CryptoTracker /> : <Calculator />}
         </div>
       </main>
