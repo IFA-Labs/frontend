@@ -1129,3 +1129,25 @@ export const ZarpLogo: React.FC = () => {
     </svg>
   );
 };
+
+
+export const ChevronDown = () => {
+  return (
+    <svg
+      width="12"
+      height="6"
+      viewBox="0 0 12 6"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M0.75 0.75L5.75 4.75L10.75 0.75"
+        stroke="white"
+        strokeOpacity="0.7"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+};

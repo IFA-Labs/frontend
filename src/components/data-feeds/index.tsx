@@ -1,6 +1,5 @@
 'use client';
 
-
 import Link from 'next/link';
 import Image, { StaticImageData } from 'next/image';
 import type { ComponentType } from 'react';
@@ -23,6 +22,7 @@ import {
   formatFeedPrice,
   getFeedBadgeLabel,
 } from '@/lib/data-feeds';
+import { ChevronDown } from '../svg';
 
 const networkIconLabels: Record<string, string> = {
   'Arbitrum Mainnet': 'A',
@@ -110,7 +110,9 @@ const DataFeeds = () => {
   const networkRows = new Map(
     rows.map((row) => [row.network, row] as [string, DataFeedRow]),
   );
-  const availableCategories = [...new Set(rows.flatMap((row) => row.categories))];
+  const availableCategories = [
+    ...new Set(rows.flatMap((row) => row.categories)),
+  ];
   const categories = ['All Categories', ...availableCategories];
   const isLoading = feedsLoading && rows.length === 0;
 
@@ -137,10 +139,7 @@ const DataFeeds = () => {
       return aIndex - bIndex;
     });
 
-  const renderFeedIcon = (
-    symbol: string,
-    icon?: string | StaticImageData,
-  ) => {
+  const renderFeedIcon = (symbol: string, icon?: string | StaticImageData) => {
     if (typeof icon === 'string' && icon.startsWith('http')) {
       return <img src={icon} alt={symbol} width={20} height={20} />;
     }
@@ -156,7 +155,9 @@ const DataFeeds = () => {
 
   const renderFilterIcon = (label: string) => (
     <span className="filter-icon">
-      {networkIconLabels[label] || categoryIconLabels[label] || label.slice(0, 2)}
+      {networkIconLabels[label] ||
+        categoryIconLabels[label] ||
+        label.slice(0, 2)}
     </span>
   );
 
@@ -187,7 +188,9 @@ const DataFeeds = () => {
     }
 
     if (row.chainLogoUrl) {
-      return <img src={row.chainLogoUrl} alt={row.network} width={16} height={16} />;
+      return (
+        <img src={row.chainLogoUrl} alt={row.network} width={16} height={16} />
+      );
     }
 
     return renderFilterIcon(row.network);
@@ -224,7 +227,9 @@ const DataFeeds = () => {
                 </option>
               ))}
             </select>
-            <span className="select-chevron">v</span>
+            <span className="select-chevron">
+              <ChevronDown />
+            </span>
           </label>
 
           <label className="filter-select">
@@ -243,7 +248,9 @@ const DataFeeds = () => {
                 </option>
               ))}
             </select>
-            <span className="select-chevron">v</span>
+            <span className="select-chevron">
+              <ChevronDown />
+            </span>
           </label>
         </div>
 
@@ -299,10 +306,7 @@ const DataFeeds = () => {
                 ))
               : filteredRows.map((row) => {
                   return (
-                    <div
-                      className="feed-row"
-                      key={row.feedId}
-                    >
+                    <div className="feed-row" key={row.feedId}>
                       <div className="feed-cell feed-cell-primary">
                         <span className="feed-cell-label">Feed</span>
                         <div className="feed-identity">
@@ -328,7 +332,9 @@ const DataFeeds = () => {
                       </div>
 
                       <div className="feed-cell">
-                        <span className="feed-cell-label">Deviation Threshold</span>
+                        <span className="feed-cell-label">
+                          Deviation Threshold
+                        </span>
                         <span>{row.deviationThreshold}</span>
                       </div>
 
@@ -356,7 +362,13 @@ const DataFeeds = () => {
         <Link href="/request-data-field" className="request-data-field-cta">
           Request new data Field
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M3 8h10M9 4l4 4-4 4"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </Link>
       </div>
