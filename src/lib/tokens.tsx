@@ -1,9 +1,10 @@
-import CNGNIcon from '../../public/images/tokens/cngn.svg';
+import CNGNIcon from '../../public/images/tokens/CNGN.png';
 import ETHIcon from '../../public/images/tokens/eth.svg';
 import USDTIcon from '../../public/images/tokens/usdt.svg';
 import BRZIcon from '../../public/images/tokens/BRZ.svg';
 import USDCIcon from '../../public/images/tokens/usdc.svg';
 import ZARPIcon from '../../public/images/tokens/zarp.svg';
+import USDSuiIcon from '../../public/images/tokens/USDsui.png';
 import { StaticImageData } from 'next/image';
 export interface TokenInfo {
   icon: StaticImageData | string;
@@ -64,11 +65,22 @@ export const tokenList: { [key: string]: TokenInfo } = {
     address: '',
     decimals: 6,
   },
+  USDSUI: {
+    icon: USDSuiIcon,
+    name: 'USDSui',
+    symbol: 'USDSui',
+    order: 6,
+    address: '',
+    decimals: 9,
+  },
 };
+
+export const getTokenIcon = (symbol: string) =>
+  tokenList[symbol]?.icon || tokenList[symbol.toUpperCase()]?.icon;
 
 export const getTokenFromSymbol = (symbol: string): TokenInfo | null => {
   const baseToken = symbol.split('/')[0];
-  return tokenList[baseToken] || null;
+  return tokenList[baseToken] || tokenList[baseToken.toUpperCase()] || null;
 };
 
 export const getAvailableTokens = (): TokenInfo[] => {

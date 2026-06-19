@@ -3,43 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Logo } from '@/components/svg';
 import Link from 'next/link';
 import { ConnectWallet } from '@/components/connect-wallet-button';
-import {
-  HamburgerIcon,
-  CloseIcon,
-  MenuIcon,
-  FaqIcon,
-  BlogIcon,
-} from '../../svg';
+import { HamburgerIcon, CloseIcon } from '../../svg';
 const Navbar = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  const openModal = () => setIsModalOpen(true);
-
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
-  };
-
-  const handleMouseEnter = (
-    menuSetter: React.Dispatch<React.SetStateAction<boolean>>,
-    timeoutRef: React.RefObject<NodeJS.Timeout | null>,
-  ) => {
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    menuSetter(true);
-  };
-
-  const handleMouseLeave = (
-    menuSetter: React.Dispatch<React.SetStateAction<boolean>>,
-    timeoutRef: React.RefObject<NodeJS.Timeout | null>,
-  ) => {
-    timeoutRef.current = setTimeout(() => {
-      menuSetter(false);
-    }, 100);
   };
 
   useEffect(() => {
@@ -73,6 +43,9 @@ const Navbar = () => {
             <li>
               <Link href="/pools">Pool</Link>
             </li>
+            <li>
+              <Link href="/faucet">Faucet</Link>
+            </li>
           </ul>
           <div className="cta">
             <ConnectWallet />
@@ -97,6 +70,9 @@ const Navbar = () => {
             </li>
             <li>
               <Link href="/pools">Pool</Link>
+            </li>
+            <li>
+              <Link href="/faucet">Faucet</Link>
             </li>
           </ul>
         </div>

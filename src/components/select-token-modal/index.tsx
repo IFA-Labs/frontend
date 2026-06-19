@@ -1,11 +1,21 @@
 'use client';
 import React, { FC, useState, useEffect } from 'react';
 import { tokenList, TokenInfo } from '@/lib/tokens';
-import { SearchIcon } from '@/components/svg';
+import { SearchIcon, SuiIcon } from '@/components/svg';
 import Image from 'next/image';
 
 // Tokens that should appear first, in this order
-const PRIORITIZED_SYMBOLS = ['CNGN', 'BRZ', 'USDC', 'USDT', 'ETH'];
+const PRIORITIZED_SYMBOLS = [
+  'SUI',
+  'USDSUI',
+  'WAL',
+  'CNGN',
+  'ZARP',
+  'BRZ',
+  'USDC',
+  'USDT',
+  'ETH',
+];
 
 const sortTokens = (
   a: { symbol?: string; name?: string; order?: number },
@@ -18,9 +28,9 @@ const sortTokens = (
   const bIndex = PRIORITIZED_SYMBOLS.indexOf(bSym);
 
   if (aIndex !== -1 || bIndex !== -1) {
-    if (aIndex === -1) return 1; // b is prioritized
-    if (bIndex === -1) return -1; // a is prioritized
-    return aIndex - bIndex; // both prioritized, order by priority list
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
+    return aIndex - bIndex;
   }
 
   const aOrder = a.order ?? 9999;
@@ -30,12 +40,27 @@ const sortTokens = (
   return (a.name || a.symbol || '').localeCompare(b.name || b.symbol || '');
 };
 
+const TokenModalIcon = ({ token }: { token: TokenInfo }) => {
+  if (token.symbol?.toUpperCase() === 'SUI') {
+    return <SuiIcon />;
+  }
+
+  return (
+    <Image
+      src={token.icon}
+      alt={token.name || token.symbol}
+      width={24}
+      height={24}
+    />
+  );
+};
+
 interface SelectTokenModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (token: TokenInfo) => void;
-  availableTokens?: TokenInfo[]; // Make this optional for compatibility
-  activeTokenField?: 'from' | 'to' | 'pay' | 'receive'; // Make this optional for compatibility
+  availableTokens?: TokenInfo[];
+  activeTokenField?: 'from' | 'to' | 'pay' | 'receive';
 }
 
 const SelectTokenModal: FC<SelectTokenModalProps> = ({
@@ -47,7 +72,6 @@ const SelectTokenModal: FC<SelectTokenModalProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTokens, setFilteredTokens] = useState<TokenInfo[]>(
-    // initialize sorted: tokens with explicit `order` show first, then alphabetical
     (availableTokens ? availableTokens : Object.values(tokenList))
       .slice()
       .sort(sortTokens),
@@ -116,12 +140,7 @@ const SelectTokenModal: FC<SelectTokenModalProps> = ({
               className="token"
             >
               <div className="token-icon">
-                <Image
-                  src={token.icon}
-                  alt={token.name || token.symbol}
-                  width={24}
-                  height={24}
-                />
+                <TokenModalIcon token={token} />
               </div>
               <div className="token-name">{token.name || token.symbol}</div>
             </div>

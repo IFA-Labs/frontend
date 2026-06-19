@@ -1,7 +1,6 @@
 'use client';
 
-import { useAccount } from 'wagmi';
-import { useAppKit } from '@reown/appkit/react';
+import { ConnectButton, useCurrentAccount } from '@mysten/dapp-kit';
 import { useEffect, useState, CSSProperties } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/useToast';
@@ -15,7 +14,6 @@ interface SwapCTAButtonProps {
   };
   isExecutingSwap: boolean;
   onProceed: () => void;
-  onConnectWalletClick?: () => void;
   fromTokenSymbol?: string;
   toTokenSymbol?: string;
 }
@@ -26,12 +24,10 @@ export function SwapCTAButton({
   proceedDetails,
   isExecutingSwap,
   onProceed,
-  onConnectWalletClick,
   fromTokenSymbol = 'tokens',
   toTokenSymbol = 'tokens',
 }: SwapCTAButtonProps) {
-  const { isConnected } = useAccount();
-  const appKit = useAppKit();
+  const account = useCurrentAccount();
   const [mounted, setMounted] = useState(false);
   const [loadingDots, setLoadingDots] = useState('');
   const [swapToastId, setSwapToastId] = useState<string | null>(null);
@@ -91,14 +87,6 @@ export function SwapCTAButton({
     fromTokenSymbol,
     toTokenSymbol,
   ]);
-
-  const handleOpenConnectModal = () => {
-    if (onConnectWalletClick) {
-      onConnectWalletClick();
-    } else if (appKit?.open) {
-      appKit.open();
-    }
-  };
 
   const handleProceed = () => {
     if (proceedDetails.message === 'Approve') {
@@ -165,11 +153,12 @@ export function SwapCTAButton({
     );
   }
 
-  if (!isConnected) {
+  if (!account?.address) {
     return (
-      <button style={enabledButtonStyle} onClick={handleOpenConnectModal}>
-        Connect Wallet
-      </button>
+      <ConnectButton
+        style={enabledButtonStyle}
+        connectText="Connect Wallet"
+      />
     );
   }
 

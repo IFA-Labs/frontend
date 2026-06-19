@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import '@mysten/dapp-kit/dist/index.css';
 import '@/styles/globals.css';
 import '@/styles/main.scss';
 import { TokenProvider } from '@/components/app/token-provider';
@@ -174,8 +175,13 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-<script src="https://cdn.visitors.now/v.js" data-token="fddfeb52-5a60-4a97-98de-fa5ca17b3620"></script>        
-<link
+        {process.env.NODE_ENV === 'production' && (
+          <script
+            src="https://cdn.visitors.now/v.js"
+            data-token="fddfeb52-5a60-4a97-98de-fa5ca17b3620"
+          />
+        )}
+        <link
           rel="alternate"
           type="application/json"
           href="/api-spec.json"
@@ -195,8 +201,12 @@ export default async function RootLayout({
           <PriceProvider refreshInterval={10000}>
             <TokenProvider>
               {children}
-              <Analytics />
-              <SpeedInsights />
+              {process.env.NODE_ENV === 'production' && (
+                <>
+                  <Analytics />
+                  <SpeedInsights />
+                </>
+              )}
             </TokenProvider>
           </PriceProvider>
         </ContextProvider>

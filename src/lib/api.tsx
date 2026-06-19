@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { tokenList } from '@/lib/tokens';
+import { getTokenIcon } from '@/lib/tokens';
 import { StaticImageData } from 'next/image';
 
 // Use environment variable in production; default to secure HTTPS API URL
@@ -70,6 +70,19 @@ export interface AuditPricePoint {
   expo: number;
 }
 
+export interface FaucetNetwork {
+  id: string;        // chain_id
+  label: string;     // network name
+  logoUrl?: string;  // chain_logo_url from API
+}
+
+export interface FaucetAsset {
+  id: string;                          // asset_id
+  symbol: string;                      // e.g. "cNGN"
+  pair: string;                        // e.g. "cNGN/USD"
+  icon?: StaticImageData | string;     // local SVG > API URL > undefined
+}
+
 export interface FeedRequestPayload {
   name: string;
   project_name: string;
@@ -85,6 +98,43 @@ export interface FeedRequestResponse extends FeedRequestPayload {
   archived: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface SwapDeploymentAsset {
+  tokenType: string;
+  assetVaultId: string;
+  protocolFeeVaultId: string;
+  assetIndex?: string;
+  coinDecimals: number;
+  targetWeightBps?: number;
+  maxTradeBps?: number;
+  maxWithdrawBps?: number;
+  minLiquidity?: number | string;
+  enabled: boolean;
+  symbol: string;
+  name?: string;
+  iconUrl?: string;
+}
+
+export interface SwapDeploymentResponse {
+  network: string;
+  packageId: string;
+  pool?: {
+    id: string;
+    lpFeeBps?: number;
+    protocolFeeBps?: number;
+    maxPriceAgeMs?: number;
+    protocolFeeRecipient?: string;
+    syncIntervalMs?: number;
+    paused?: boolean;
+  };
+  assets?: SwapDeploymentAsset[];
+  oracle?: {
+    priceFeedId?: string;
+  };
+  sweep?: {
+    targetTokenType?: string;
+  };
 }
 
 class ApiService {
@@ -127,6 +177,13 @@ class ApiService {
     } catch (error) {
       throw error;
     }
+  }
+
+  async getSwapDeployment(network = 'testnet'): Promise<SwapDeploymentResponse> {
+    const response = await axios.get<SwapDeploymentResponse>(
+      `/api/swap/deployment?network=${encodeURIComponent(network)}`,
+    );
+    return response.data;
   }
 
   async getAssetIdBySymbol(symbol: string): Promise<string | null> {
@@ -263,6 +320,44 @@ class ApiService {
     return data;
   }
 
+  async getFaucetNetworks(): Promise<FaucetNetwork[]> {
+    const feeds = await this.getFeeds();
+    const seen = new Set<string>();
+    const networks: FaucetNetwork[] = [];
+    for (const feed of feeds) {
+      if (!seen.has(feed.chain_id)) {
+        seen.add(feed.chain_id);
+        networks.push({
+          id: feed.chain_id,
+          label: feed.network,
+          logoUrl: feed.chain_logo_url,
+        });
+      }
+    }
+    return networks;
+  }
+
+  async getFaucetAssets(): Promise<FaucetAsset[]> {
+    const feeds = await this.getFeeds();
+    const seen = new Set<string>();
+    const assets: FaucetAsset[] = [];
+    for (const feed of feeds) {
+      const symbol = feed.feed.split('/')[0];
+      if (!seen.has(feed.asset_id)) {
+        seen.add(feed.asset_id);
+        // Priority: local token icon > API asset_logo_url > undefined
+        const localIcon = getTokenIcon(symbol);
+        assets.push({
+          id: feed.asset_id,
+          symbol,
+          pair: feed.feed,
+          icon: localIcon ?? feed.asset_logo_url,
+        });
+      }
+    }
+    return assets;
+  }
+
   async submitFeedRequest(
     payload: FeedRequestPayload,
   ): Promise<FeedRequestResponse> {
@@ -310,7 +405,7 @@ class ApiService {
   }
 
   private getTokenIcon(token: string): string | StaticImageData {
-    return tokenList[token]?.icon || '/images/tokens/eth.svg';
+    return getTokenIcon(token) || '/images/tokens/eth.svg';
   }
 
   async getPriceForPair(
