@@ -202,21 +202,26 @@ const Navbar: React.FC = () => {
               <FaqIcon />
             </div>
             <div className="link-details">
-              <div className="title">Swap</div>
-              <div className="desc">Swap your stablecoins/tokens</div>
+              <div className="title">Swap/Sweep</div>
+              <div className="desc">Swap and sweep your stablecoins/tokens</div>
             </div>
           </Link>
-          <Link
-            href="https://www.mykombat.xyz/"
-            target="_blank"
-            className="menu-item"
-          >
+          <Link href="/data-feeds" className="menu-item">
             <div className="icon">
-              <BlogIcon />
+              <FaqIcon />
             </div>
             <div className="link-details">
-              <div className="title">Kombat</div>
-              <div className="desc">Decentralized prediction markets</div>
+              <div className="title">Data Feeds</div>
+              <div className="desc">Explore live oracle markets</div>
+            </div>
+          </Link>
+          <Link href="/faucet" className="menu-item">
+            <div className="icon">
+              <FaqIcon />
+            </div>
+            <div className="link-details">
+              <div className="title">Ifalabs Faucet</div>
+              <div className="desc">Get free tokens for testing</div>
             </div>
           </Link>
         </div>
@@ -287,7 +292,7 @@ const Navbar: React.FC = () => {
               <MenuIcon />
             </li>
             <li>
-              <Link href="/swap">Swap</Link>
+              <Link href="/swap">Swap/Sweep</Link>
             </li>
           </ul>
           <Link href="https://docs.ifalabs.com" id="join">

@@ -14,10 +14,10 @@ const Calculator = () => {
   );
   const [tokens, setTokens] = useState<{ pay: TokenInfo; receive: TokenInfo }>({
     pay: tokenList.USDC,
-    receive: tokenList.CNGN,
+    receive: tokenList.ZARP,
   });
   const [amounts, setAmounts] = useState({ pay: '', receive: '' });
-  const { rate: exchangeRate, loading } = useExchangeRate(
+  const { rate: exchangeRate, loading, refresh } = useExchangeRate(
     tokens.pay.name,
     tokens.receive.name,
   );
@@ -113,7 +113,17 @@ const Calculator = () => {
               {tokens.receive.name}
             </div>
           ) : (
-            <div className="price">Rate unavailable</div>
+            <div className="price rate-unavailable">
+              Rate unavailable
+              <button
+                type="button"
+                onClick={() => refresh()}
+                className="retry-rate"
+                title="Retry"
+              >
+                ↺
+              </button>
+            </div>
           )}
         </div>
         <div className="swap-input-container">

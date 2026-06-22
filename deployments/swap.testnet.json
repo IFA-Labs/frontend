@@ -1,0 +1,93 @@
+{
+  "network": "testnet",
+  "packageId": "0x765c26edd8a46750c017281c249cece13e7d6a2581698777ab9c804175b20f4b",
+  "adminCapId": "0x9e022992fa149edfd33978e50c87037dbfcb8292f655a6b7cc28801fc206caf8",
+  "hlpTreasuryCapId": "0xf13db564315b09bbee997915e7c2b3d218a7118466871933f7550178eee62b3f",
+  "hlpMetadataCapId": "0xa2e31bcbed80a5f0225f6f883c8b6a8bc07fda94ac910d95933814e493cc8f92",
+  "pool": {
+    "id": "0x905157cac184db49923b54c8baeeed6d03fcfca2bde2a89ac120c81c47666b6d",
+    "lpFeeBps": 30,
+    "protocolFeeBps": 10,
+    "maxPriceAgeMs": 3600000,
+    "protocolFeeRecipient": "0x549182227b60dc5e499d77df18f2608991ca3440f7cd848bb5206885596dd315",
+    "syncIntervalMs": 600000,
+    "paused": false
+  },
+  "oracle": {
+    "priceFeedId": "0x5d2728b862de08de767e4f8841a38c9452d951c0602e77fc47bfbb3ab03f33f0"
+  },
+  "sweep": {
+    "targetTokenType": "0x03d89b35c658a0b0359b35fd83fc5c44949af781e376125d382eed9142aefe6d::usdsui::USDSUI"
+  },
+  "assets": [
+    {
+      "tokenType": "0x2::sui::SUI",
+      "symbol": "SUI",
+      "name": "Sui",
+      "assetVaultId": "0xcc4404aaef9fd5b33890e3249bbaf41045c63f7f9fc1c390dc375eec54e7331d",
+      "protocolFeeVaultId": "0x019ff372771260fe057bd91569ee7a72914fa1675f9a605d86b8efa767d8ce15",
+      "assetIndex": "0xd57f164423e2cda5609280f00a447a518e3dd6877cb4e3b44f30d1c75ac1fa27",
+      "assetIndexBytes": "[213,127,22,68,35,226,205,165,96,146,128,240,10,68,122,81,142,61,214,135,124,180,227,180,79,48,209,199,90,193,250,39]",
+      "coinDecimals": 9,
+      "targetWeightBps": 4000,
+      "maxTradeBps": 10000,
+      "maxWithdrawBps": 10000,
+      "minLiquidity": 0,
+      "enabled": true
+    },
+    {
+      "tokenType": "0x03d89b35c658a0b0359b35fd83fc5c44949af781e376125d382eed9142aefe6d::usdsui::USDSUI",
+      "symbol": "USDSui",
+      "name": "USDSui",
+      "assetVaultId": "0xebd902f3725acfe43e8abc31300e306c782198c0d3978f5a3ca8417355dfa706",
+      "protocolFeeVaultId": "0x533a2d45e9a6ebf8b352004207bae4851a63ee656b09f9c046f15a9d53a82cbc",
+      "assetIndex": "0xf184c9079687c0c05097f861cd229697c610d4443712d900f162ef5b605d8bb9",
+      "assetIndexBytes": "[241,132,201,7,150,135,192,192,80,151,248,97,205,34,150,151,198,16,212,68,55,18,217,0,241,98,239,91,96,93,139,185]",
+      "coinDecimals": 9,
+      "targetWeightBps": 4000,
+      "maxTradeBps": 10000,
+      "maxWithdrawBps": 10000,
+      "minLiquidity": 0,
+      "enabled": true
+    },
+    {
+      "tokenType": "0x03d89b35c658a0b0359b35fd83fc5c44949af781e376125d382eed9142aefe6d::cngn::CNGN",
+      "symbol": "CNGN",
+      "name": "cNGN",
+      "assetVaultId": "0x5fb56bd1d5162af2ce67f06a969dad0df60ff8c628af429efe2ff5e2aceebcd0",
+      "protocolFeeVaultId": "0xac6819647ff6c9773bfef4ac34569f3ed43e359f7fa36dffaf3f861221e1a9b3",
+      "assetIndex": "0x83a18c73cf75a028a24b79cbedb3b8d8ba363b748a3210ddbcaa95eec3b87b3a",
+      "assetIndexBytes": "[131,161,140,115,207,117,160,40,162,75,121,203,237,179,184,216,186,54,59,116,138,50,16,221,188,170,149,238,195,184,123,58]",
+      "coinDecimals": 6,
+      "targetWeightBps": 4000,
+      "maxTradeBps": 10000,
+      "maxWithdrawBps": 10000,
+      "minLiquidity": 0,
+      "enabled": true
+    },
+    {
+      "tokenType": "0x03d89b35c658a0b0359b35fd83fc5c44949af781e376125d382eed9142aefe6d::zarp::ZARP",
+      "symbol": "ZARP",
+      "name": "ZARP",
+      "assetVaultId": "0xcefba8afe12d87aa206a8988629fdd91deec4f89ff484c628af8a50785986bec",
+      "protocolFeeVaultId": "0x44c76eb9786a73eaf895a516d6d96544acb1f8c78cc729d60f2e4f7ad0624e8c",
+      "assetIndex": "0x12373a3b1c4827c84bf6d7b11df100442695d0abfdb7a20d30a41d67d58e75a8",
+      "assetIndexBytes": "[18,55,58,59,28,72,39,200,75,246,215,177,29,241,0,68,38,149,208,171,253,183,162,13,48,164,29,103,213,142,117,168]",
+      "coinDecimals": 6,
+      "targetWeightBps": 4000,
+      "maxTradeBps": 10000,
+      "maxWithdrawBps": 10000,
+      "minLiquidity": 0,
+      "enabled": true
+    },
+    {
+      "tokenType": "0x03d89b35c658a0b0359b35fd83fc5c44949af781e376125d382eed9142aefe6d::wal::WAL",
+      "symbol": "WAL",
+      "name": "Walrus",
+      "assetVaultId": "0x387ebe05d6742129c47d926cbe9199e5562ae4efbd953ae340a4e249e30f51c2",
+      "protocolFeeVaultId": "0x49cff79c6697a446ad8b365eb211a6b51fdfd5149b75541f45ab06d90a175ef2",
+      "coinDecimals": 9,
+      "enabled": true
+    }
+  ]
+}

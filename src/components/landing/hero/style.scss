@@ -676,6 +676,27 @@
             border-radius: 50px;
             background: rgba(255, 255, 255, 0.08);
             color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            &.rate-unavailable {
+              color: rgba(255, 255, 255, 0.45);
+            }
+
+            .retry-rate {
+              background: none;
+              border: none;
+              color: rgba(255, 255, 255, 0.6);
+              cursor: pointer;
+              font-size: 16px;
+              padding: 0;
+              line-height: 1;
+
+              &:hover {
+                color: #fff;
+              }
+            }
           }
         }
         .swap-input-container {

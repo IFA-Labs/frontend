@@ -56,7 +56,6 @@ const truncate = (value: string, left = 6, right = 4) =>
     ? `${value.slice(0, left)}...${value.slice(-right)}`
     : value;
 
-// Local fallbacks for tokens not available in @web3icons/react.
 const localTokenIcons: Record<string, StaticImageData | string> = {
   WAL: WalIcon,
   CNGN: CngnIcon,
@@ -123,15 +122,23 @@ const FaucetDropdown = ({
 
   useEffect(() => {
     if (!open) return;
-    const close = () => setOpen(false);
+    const closeOnScroll = (event: Event) => {
+      if (
+        event.target instanceof Node &&
+        panelRef.current?.contains(event.target)
+      ) {
+        return;
+      }
+      setOpen(false);
+    };
     const keyDownHandler = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') close();
+      if (event.key === 'Escape') setOpen(false);
     };
     document.addEventListener('keydown', keyDownHandler);
-    window.addEventListener('scroll', close, true);
+    window.addEventListener('scroll', closeOnScroll, true);
     return () => {
       document.removeEventListener('keydown', keyDownHandler);
-      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('scroll', closeOnScroll, true);
     };
   }, [open]);
 
@@ -511,7 +518,6 @@ const Faucet = () => {
     return () => {
       signal.cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deployment, selectedTokenType, account?.address]);
 
   const assetOptions: DropdownOption[] = supportedTokenTypes.map(
@@ -635,16 +641,6 @@ const Faucet = () => {
       const resolvedTx = Transaction.from(transactionBytes);
       const transactionJson = await resolvedTx.toJSON();
 
-      console.info('[faucet:claim]', {
-        wallet: currentWallet.name,
-        walletFeatures: Object.keys(currentWallet.features),
-        commandCount: txData.commands.length,
-        inputCount: txData.inputs.length,
-        transactionJsonLength: transactionJson.length,
-        transactionByteLength: transactionBytes.length,
-        tokenType: selectedTokenType,
-      });
-
       const { bytes, signature } = await signTransactionFeature.signTransaction({
         transaction: {
           toJSON: async () => transactionJson,
@@ -711,10 +707,6 @@ const Faucet = () => {
             </div>
 
             <div className="faucet-status-grid">
-              {/* <div>
-                <span>Faucet</span>
-                <strong>{stateLoading ? 'Loading...' : faucetBalance}</strong>
-              </div> */}
               <div>
                 <span>Cooldown</span>
                 <strong>{formatCooldown(remainingCooldownMs)}</strong>

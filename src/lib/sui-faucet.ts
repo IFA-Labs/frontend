@@ -1,6 +1,7 @@
 import { bcs } from '@mysten/sui/bcs';
 import type { SuiJsonRpcClient } from '@mysten/sui/jsonRpc';
 import { Transaction } from '@mysten/sui/transactions';
+import { normalizeStructTag } from '@mysten/sui/utils';
 
 export const CLOCK_ID = '0x6';
 export const ZERO_SUI_ADDRESS =
@@ -112,12 +113,19 @@ type DevInspectReturnValue = [number[], string];
 
 export function normalizeSuiTokenType(tokenType: string) {
   const trimmed = tokenType.trim();
+  const prefixed =
+    trimmed.startsWith('0x') || !/^[0-9a-fA-F]+::/.test(trimmed)
+      ? trimmed
+      : `0x${trimmed}`;
 
-  if (trimmed.startsWith('0x')) {
-    return trimmed;
+  // Canonicalize the struct tag (zero-pads addresses, lowercases hex) so coin
+  // types compare equal regardless of how the RPC or config formats them, e.g.
+  // `0x3d89..` (RPC, leading zero stripped) vs `0x03d89..` (deployment config).
+  try {
+    return normalizeStructTag(prefixed);
+  } catch {
+    return prefixed;
   }
-
-  return /^[0-9a-fA-F]+::/.test(trimmed) ? `0x${trimmed}` : trimmed;
 }
 
 const metadataBcs = bcs.struct('FaucetMetadata', {

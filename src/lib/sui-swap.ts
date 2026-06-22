@@ -74,10 +74,19 @@ export const FALLBACK_SUI_SWAP_DEPLOYMENT: SuiSwapDeployment = {
 
 export const SUI_SWAP_DEPLOYMENT = FALLBACK_SUI_SWAP_DEPLOYMENT;
 
+/** Derives a display symbol from a coin type, e.g. `0x..::usdsui::USDSUI` -> `USDSUI`. */
+export function symbolFromCoinType(coinType: string) {
+  const segments = coinType.split('::');
+  return segments[segments.length - 1] || coinType;
+}
+
 export function normalizeSwapDeploymentConfig(
   deployment?: SwapDeploymentResponse | null,
 ): SuiSwapDeployment {
-  if (!deployment?.pool?.id || !deployment.oracle?.priceFeedId) {
+  // The pool id is the minimum needed to treat this as a real deployment. The
+  // oracle price-feed id may still be pending; downstream config-readiness
+  // checks (hasBaseSwapDeploymentConfig) report it as missing until supplied.
+  if (!deployment?.pool?.id) {
     return {
       ...FALLBACK_SUI_SWAP_DEPLOYMENT,
       network: deployment?.network || FALLBACK_SUI_SWAP_DEPLOYMENT.network,
@@ -85,22 +94,25 @@ export function normalizeSwapDeploymentConfig(
   }
 
   const assets =
-    deployment.assets?.map((asset) => ({
-      coinType: asset.tokenType,
-      symbol: asset.symbol,
-      name: asset.name || asset.symbol,
-      decimals: asset.coinDecimals,
-      assetVaultId: asset.assetVaultId,
-      protocolFeeVaultId: asset.protocolFeeVaultId,
-      icon: asset.iconUrl,
-      enabled: asset.enabled,
-    })) || [];
+    deployment.assets?.map((asset) => {
+      const symbol = asset.symbol || symbolFromCoinType(asset.tokenType);
+      return {
+        coinType: asset.tokenType,
+        symbol,
+        name: asset.name || symbol,
+        decimals: asset.coinDecimals ?? 9,
+        assetVaultId: asset.assetVaultId,
+        protocolFeeVaultId: asset.protocolFeeVaultId,
+        icon: asset.iconUrl,
+        enabled: asset.enabled ?? true,
+      };
+    }) || [];
 
   return {
     network: deployment.network,
     packageId: deployment.packageId,
     poolId: deployment.pool.id,
-    priceFeedId: deployment.oracle.priceFeedId,
+    priceFeedId: deployment.oracle?.priceFeedId || '0x...',
     assets: assets.length > 0 ? assets : FALLBACK_SUI_SWAP_DEPLOYMENT.assets,
     sweepTargetTokenType: deployment.sweep?.targetTokenType,
     pool: deployment.pool,
@@ -171,6 +183,44 @@ export function getSwapAssetByCoinType(
   const normalizedCoinType = normalizeSuiTokenType(coinType);
   return deployment.assets.find(
     (asset) => normalizeSuiTokenType(asset.coinType) === normalizedCoinType,
+  );
+}
+
+/**
+ * Resolves the Asset Sweep target asset (USDSui for V1). Prefers the
+ * deployment's configured `sweepTargetTokenType`, falling back to the asset
+ * whose symbol is USDSui.
+ */
+export function getSweepTargetAsset(deployment = SUI_SWAP_DEPLOYMENT) {
+  if (deployment.sweepTargetTokenType) {
+    const byType = getSwapAssetByCoinType(
+      deployment.sweepTargetTokenType,
+      deployment,
+    );
+    if (byType) return byType;
+  }
+  return getSwapAssetBySymbol('USDSui', deployment);
+}
+
+/**
+ * A dust asset is sweepable when the base deployment is configured, the asset
+ * is enabled and not the sweep target, and the asset + target vault object IDs
+ * are real (not placeholders).
+ */
+export function hasSweepLegConfig(
+  dustAsset?: SuiSwapAssetConfig,
+  targetAsset?: SuiSwapAssetConfig,
+  deployment = SUI_SWAP_DEPLOYMENT,
+) {
+  return (
+    hasBaseSwapDeploymentConfig(deployment) &&
+    Boolean(dustAsset?.enabled) &&
+    Boolean(targetAsset?.enabled) &&
+    isConfiguredObjectId(dustAsset?.assetVaultId) &&
+    isConfiguredObjectId(targetAsset?.assetVaultId) &&
+    isConfiguredObjectId(targetAsset?.protocolFeeVaultId) &&
+    normalizeSuiTokenType(dustAsset!.coinType) !==
+      normalizeSuiTokenType(targetAsset!.coinType)
   );
 }
 
@@ -374,6 +424,349 @@ export async function createSwapExactInputTransaction({
       tx.object(CLOCK_ID),
     ],
   });
+
+  tx.setSenderIfNotSet(owner);
+  return tx;
+}
+
+// --- Liquidity Pool (HLP) ---
+
+export const USD_VALUE_DECIMALS = 30;
+export const LP_DECIMALS = 9;
+
+const READ_SENDER =
+  '0x0000000000000000000000000000000000000000000000000000000000000000';
+
+export function getHlpCoinType(deployment = SUI_SWAP_DEPLOYMENT) {
+  return `${deployment.packageId}::hlp::HLP`;
+}
+
+function decodeReturnValue(returnValue: [number[], string]) {
+  const [bytes, typeTag] = returnValue;
+  const data = Uint8Array.from(bytes);
+  switch (typeTag) {
+    case 'bool':
+      return bcs.bool().parse(data);
+    case 'u8':
+      return BigInt(bcs.u8().parse(data));
+    case 'u16':
+      return BigInt(bcs.u16().parse(data));
+    case 'u32':
+      return BigInt(bcs.u32().parse(data));
+    case 'u64':
+      return BigInt(bcs.u64().parse(data));
+    case 'u128':
+      return BigInt(bcs.u128().parse(data));
+    case 'u256':
+      return BigInt(bcs.u256().parse(data));
+    case 'address':
+      return `0x${Array.from(data)
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('')}`;
+    default:
+      return BigInt(bcs.u64().parse(data));
+  }
+}
+
+function readReturnValues(
+  result: Awaited<ReturnType<SuiJsonRpcClient['devInspectTransactionBlock']>>,
+) {
+  const status = result.effects.status;
+  if (status.status !== 'success') {
+    throw new Error(status.error || 'Read call failed.');
+  }
+
+  const values =
+    result.results?.flatMap((item) => item.returnValues ?? []) ?? [];
+  return values.map((value) => decodeReturnValue(value as [number[], string]));
+}
+
+export interface PoolSummary {
+  paused: boolean;
+  totalLpSupply: bigint;
+  accountedValueUsd: bigint;
+  lpFeeBps: bigint;
+  protocolFeeBps: bigint;
+  maxPriceAgeMs: bigint;
+  syncIntervalMs: bigint;
+  protocolFeeRecipient: string;
+  assetCount: bigint;
+}
+
+export async function getPoolSummary({
+  client,
+  sender = READ_SENDER,
+  deployment = SUI_SWAP_DEPLOYMENT,
+}: {
+  client: SuiJsonRpcClient;
+  sender?: string;
+  deployment?: SuiSwapDeployment;
+}): Promise<PoolSummary> {
+  const tx = new Transaction();
+  tx.moveCall({
+    target: `${deployment.packageId}::hetero_swap_periphery::get_pool_summary`,
+    arguments: [tx.object(deployment.poolId)],
+  });
+
+  const result = await client.devInspectTransactionBlock({
+    sender,
+    transactionBlock: tx,
+  });
+  const values = readReturnValues(result);
+  if (values.length < 9) throw new Error('Pool summary response was incomplete.');
+
+  return {
+    paused: Boolean(values[0]),
+    totalLpSupply: values[1] as bigint,
+    accountedValueUsd: values[2] as bigint,
+    lpFeeBps: values[3] as bigint,
+    protocolFeeBps: values[4] as bigint,
+    maxPriceAgeMs: values[5] as bigint,
+    syncIntervalMs: values[6] as bigint,
+    protocolFeeRecipient: String(values[7]),
+    assetCount: values[8] as bigint,
+  };
+}
+
+export async function previewDeposit({
+  client,
+  sender = READ_SENDER,
+  asset,
+  amount,
+  deployment = SUI_SWAP_DEPLOYMENT,
+}: {
+  client: SuiJsonRpcClient;
+  sender?: string;
+  asset: SuiSwapAssetConfig;
+  amount: bigint;
+  deployment?: SuiSwapDeployment;
+}): Promise<bigint> {
+  const tx = new Transaction();
+  tx.moveCall({
+    target: `${deployment.packageId}::hetero_swap_periphery::preview_deposit`,
+    typeArguments: [normalizeSuiTokenType(asset.coinType)],
+    arguments: [
+      tx.object(deployment.poolId),
+      tx.object(deployment.priceFeedId),
+      tx.pure.u64(amount),
+      tx.object(CLOCK_ID),
+    ],
+  });
+
+  const result = await client.devInspectTransactionBlock({
+    sender,
+    transactionBlock: tx,
+  });
+  return readReturnValues(result)[0] as bigint;
+}
+
+export async function previewWithdraw({
+  client,
+  sender = READ_SENDER,
+  asset,
+  lpAmount,
+  deployment = SUI_SWAP_DEPLOYMENT,
+}: {
+  client: SuiJsonRpcClient;
+  sender?: string;
+  asset: SuiSwapAssetConfig;
+  lpAmount: bigint;
+  deployment?: SuiSwapDeployment;
+}): Promise<bigint> {
+  const tx = new Transaction();
+  tx.moveCall({
+    target: `${deployment.packageId}::hetero_swap_periphery::preview_withdraw`,
+    typeArguments: [normalizeSuiTokenType(asset.coinType)],
+    arguments: [
+      tx.object(deployment.poolId),
+      tx.object(deployment.priceFeedId),
+      tx.pure.u64(lpAmount),
+      tx.object(CLOCK_ID),
+    ],
+  });
+
+  const result = await client.devInspectTransactionBlock({
+    sender,
+    transactionBlock: tx,
+  });
+  return readReturnValues(result)[0] as bigint;
+}
+
+export async function createDepositTransaction({
+  client,
+  owner,
+  asset,
+  amountIn,
+  minLpOut,
+  deployment = SUI_SWAP_DEPLOYMENT,
+}: {
+  client: SuiJsonRpcClient;
+  owner: string;
+  asset: SuiSwapAssetConfig;
+  amountIn: bigint;
+  minLpOut: bigint;
+  deployment?: SuiSwapDeployment;
+}) {
+  const tx = new Transaction();
+  const coinIn = await selectInputCoin({
+    tx,
+    client,
+    owner,
+    coinType: asset.coinType,
+    amount: amountIn,
+  });
+
+  tx.moveCall({
+    target: `${deployment.packageId}::hetero_swap_periphery::deposit_liquidity`,
+    typeArguments: [normalizeSuiTokenType(asset.coinType)],
+    arguments: [
+      tx.object(deployment.poolId),
+      tx.object(asset.assetVaultId),
+      tx.object(deployment.priceFeedId),
+      coinIn,
+      tx.pure.u64(minLpOut),
+      tx.object(CLOCK_ID),
+    ],
+  });
+
+  tx.setSenderIfNotSet(owner);
+  return tx;
+}
+
+export async function createWithdrawTransaction({
+  client,
+  owner,
+  asset,
+  lpAmountIn,
+  minAmountOut,
+  deployment = SUI_SWAP_DEPLOYMENT,
+}: {
+  client: SuiJsonRpcClient;
+  owner: string;
+  asset: SuiSwapAssetConfig;
+  lpAmountIn: bigint;
+  minAmountOut: bigint;
+  deployment?: SuiSwapDeployment;
+}) {
+  const tx = new Transaction();
+  const lpCoin = await selectInputCoin({
+    tx,
+    client,
+    owner,
+    coinType: getHlpCoinType(deployment),
+    amount: lpAmountIn,
+  });
+
+  tx.moveCall({
+    target: `${deployment.packageId}::hetero_swap_periphery::withdraw_liquidity`,
+    typeArguments: [normalizeSuiTokenType(asset.coinType)],
+    arguments: [
+      tx.object(deployment.poolId),
+      tx.object(asset.assetVaultId),
+      tx.object(deployment.priceFeedId),
+      lpCoin,
+      tx.pure.u64(minAmountOut),
+      tx.object(CLOCK_ID),
+    ],
+  });
+
+  tx.setSenderIfNotSet(owner);
+  return tx;
+}
+
+export async function quoteSweep({
+  client,
+  sender,
+  dustAsset,
+  targetAsset,
+  dustAmount,
+  deployment = SUI_SWAP_DEPLOYMENT,
+}: {
+  client: SuiJsonRpcClient;
+  sender: string;
+  dustAsset: SuiSwapAssetConfig;
+  targetAsset: SuiSwapAssetConfig;
+  dustAmount: bigint;
+  deployment?: SuiSwapDeployment;
+}): Promise<SuiSwapQuote> {
+  const tx = new Transaction();
+
+  tx.moveCall({
+    target: `${deployment.packageId}::hetero_swap_periphery::quote_sweep`,
+    typeArguments: [
+      normalizeSuiTokenType(dustAsset.coinType),
+      normalizeSuiTokenType(targetAsset.coinType),
+    ],
+    arguments: [
+      tx.object(deployment.poolId),
+      tx.object(deployment.priceFeedId),
+      tx.pure.u64(dustAmount),
+      tx.object(CLOCK_ID),
+    ],
+  });
+
+  const result = await client.devInspectTransactionBlock({
+    sender,
+    transactionBlock: tx,
+  });
+
+  return readQuote(result);
+}
+
+export interface SweepLeg {
+  dustAsset: SuiSwapAssetConfig;
+  amountIn: bigint;
+  minAmountOut: bigint;
+}
+
+/**
+ * Builds one PTB containing one typed `sweep<TDust, TTarget>` call per dust
+ * leg. Sui Move cannot accept a mixed vector of differently-typed coins, so the
+ * heterogeneous list is composed at the PTB layer — all legs execute atomically
+ * and the whole transaction reverts if any leg fails.
+ */
+export async function createSweepTransaction({
+  client,
+  owner,
+  targetAsset,
+  legs,
+  deployment = SUI_SWAP_DEPLOYMENT,
+}: {
+  client: SuiJsonRpcClient;
+  owner: string;
+  targetAsset: SuiSwapAssetConfig;
+  legs: SweepLeg[];
+  deployment?: SuiSwapDeployment;
+}) {
+  const tx = new Transaction();
+
+  for (const leg of legs) {
+    const dustCoin = await selectInputCoin({
+      tx,
+      client,
+      owner,
+      coinType: leg.dustAsset.coinType,
+      amount: leg.amountIn,
+    });
+
+    tx.moveCall({
+      target: `${deployment.packageId}::hetero_swap_periphery::sweep`,
+      typeArguments: [
+        normalizeSuiTokenType(leg.dustAsset.coinType),
+        normalizeSuiTokenType(targetAsset.coinType),
+      ],
+      arguments: [
+        tx.object(deployment.poolId),
+        tx.object(leg.dustAsset.assetVaultId),
+        tx.object(targetAsset.assetVaultId),
+        tx.object(targetAsset.protocolFeeVaultId || ''),
+        tx.object(deployment.priceFeedId),
+        dustCoin,
+        tx.pure.u64(leg.minAmountOut),
+        tx.object(CLOCK_ID),
+      ],
+    });
+  }
 
   tx.setSenderIfNotSet(owner);
   return tx;

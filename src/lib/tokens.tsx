@@ -8,6 +8,30 @@ import USDSuiIcon from '../../public/images/tokens/USDsui.png';
 import BRLIcon from '../../public/images/tokens/BRL.svg';
 import WALIcon from '../../public/images/networks/Wal.png';
 import { StaticImageData } from 'next/image';
+
+// Currency flag emoji map for forex pairs not in tokenList
+export const currencyFlagMap: Record<string, string> = {
+  EUR: '🇪🇺',
+  GBP: '🇬🇧',
+  GHS: '🇬🇭',
+  KES: '🇰🇪',
+  ZAR: '🇿🇦',
+  NGN: '🇳🇬',
+  USD: '🇺🇸',
+  JPY: '🇯🇵',
+  CAD: '🇨🇦',
+  AUD: '🇦🇺',
+  CHF: '🇨🇭',
+  CNY: '🇨🇳',
+  INR: '🇮🇳',
+  MXN: '🇲🇽',
+  SGD: '🇸🇬',
+  HKD: '🇭🇰',
+  SEK: '🇸🇪',
+  NOK: '🇳🇴',
+  DKK: '🇩🇰',
+  NZD: '🇳🇿',
+};
 export interface TokenInfo {
   icon: StaticImageData | string;
   name: string;
@@ -19,6 +43,14 @@ export interface TokenInfo {
 }
 
 export const tokenList: { [key: string]: TokenInfo } = {
+  SUI: {
+    icon: '/images/tokens/sui.svg',
+    name: 'SUI',
+    symbol: 'SUI',
+    order: 0,
+    address: '0x2::sui::SUI',
+    decimals: 9,
+  },
   CNGN: {
     icon: CNGNIcon,
     name: 'CNGN',

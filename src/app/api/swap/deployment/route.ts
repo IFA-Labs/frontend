@@ -10,10 +10,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Swap deployment lives in its own file so it does not collide with the
+    // faucet deployment (deployments/<network>.json), which has a different
+    // shape and a different packageId.
     const deploymentPath = path.join(
       process.cwd(),
       'deployments',
-      `${network}.json`,
+      `swap.${network}.json`,
     );
     const deployment = JSON.parse(await readFile(deploymentPath, 'utf8'));
 

@@ -105,6 +105,7 @@ export interface SwapDeploymentAsset {
   assetVaultId: string;
   protocolFeeVaultId: string;
   assetIndex?: string;
+  assetIndexBytes?: string;
   coinDecimals: number;
   targetWeightBps?: number;
   maxTradeBps?: number;
@@ -119,6 +120,9 @@ export interface SwapDeploymentAsset {
 export interface SwapDeploymentResponse {
   network: string;
   packageId: string;
+  adminCapId?: string;
+  hlpTreasuryCapId?: string | null;
+  hlpMetadataCapId?: string;
   pool?: {
     id: string;
     lpFeeBps?: number;
