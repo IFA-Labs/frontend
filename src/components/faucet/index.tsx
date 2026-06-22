@@ -1,9 +1,7 @@
 'use client';
-import Image from 'next/image';
 import { StaticImageData } from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { tokenIcons } from '@web3icons/react';
-import { SuiIcon } from '@/components/svg';
+import { TokenIcon } from '@/lib/token-icons';
 import WalIcon from '../../../public/images/networks/Wal.png';
 import CngnIcon from '../../../public/images/tokens/CNGN.png';
 import UsdSuiIcon from '../../../public/images/tokens/USDsui.png';
@@ -58,7 +56,9 @@ const truncate = (value: string, left = 6, right = 4) =>
     ? `${value.slice(0, left)}...${value.slice(-right)}`
     : value;
 
+// Local fallbacks for tokens not available in @web3icons/react.
 const localTokenIcons: Record<string, StaticImageData | string> = {
+  WAL: WalIcon,
   CNGN: CngnIcon,
   USDSUI: UsdSuiIcon,
   ZARP: ZarpIcon,
@@ -72,100 +72,13 @@ const AssetIcon = ({
   symbol: string;
   icon?: StaticImageData | string;
   size?: number;
-}) => {
-  const [failed, setFailed] = useState(false);
-
-  // Use SuiIcon for SUI token
-  if (symbol.toUpperCase() === 'SUI') {
-    return <SuiIcon />;
-  }
-
-  // Use WalIcon for WAL token
-  if (symbol.toUpperCase() === 'WAL') {
-    return (
-      <Image
-        src={WalIcon}
-        alt={symbol}
-        width={size}
-        height={size}
-        style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-      />
-    );
-  }
-
-  const localIcon = localTokenIcons[symbol.toUpperCase()];
-  if (localIcon) {
-    return (
-      <Image
-        src={localIcon}
-        alt={symbol}
-        width={size}
-        height={size}
-        style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-      />
-    );
-  }
-
-  // Try to use provided icon URL first
-  if (icon && !failed) {
-    if (typeof icon === 'object') {
-      return (
-        <Image
-          src={icon}
-          alt={symbol}
-          width={size}
-          height={size}
-          style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-          onError={() => setFailed(true)}
-        />
-      );
-    }
-
-    return (
-      <img
-        src={icon}
-        alt={symbol}
-        width={size}
-        height={size}
-        style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-        onError={() => setFailed(true)}
-      />
-    );
-  }
-
-  // Try to get icon from web3icons
-  try {
-    const web3Icon = (tokenIcons as any)[symbol.toLowerCase()];
-    if (web3Icon) {
-      return (
-        <img
-          src={web3Icon}
-          alt={symbol}
-          width={size}
-          height={size}
-          style={{ borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-          onError={() => setFailed(true)}
-        />
-      );
-    }
-  } catch {
-    // If web3icons fails, fall back to initials
-  }
-
-  // Fallback to colored badge with initials
-  const color = ['#00c2ff', '#8b5cf6', '#00a878', '#e1b12c'][
-    symbol.charCodeAt(0) % 4
-  ];
-
-  return (
-    <span
-      className="asset-icon-sm"
-      style={{ background: color, width: size, height: size }}
-    >
-      {symbol[0] || '?'}
-    </span>
-  );
-};
+}) => (
+  <TokenIcon
+    symbol={symbol}
+    icon={localTokenIcons[symbol.toUpperCase()] ?? icon}
+    size={size}
+  />
+);
 
 const FaucetDropdown = ({
   options,

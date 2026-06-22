@@ -5,6 +5,8 @@ import BRZIcon from '../../public/images/tokens/BRZ.svg';
 import USDCIcon from '../../public/images/tokens/usdc.svg';
 import ZARPIcon from '../../public/images/tokens/zarp.svg';
 import USDSuiIcon from '../../public/images/tokens/USDsui.png';
+import BRLIcon from '../../public/images/tokens/BRL.svg';
+import WALIcon from '../../public/images/networks/Wal.png';
 import { StaticImageData } from 'next/image';
 export interface TokenInfo {
   icon: StaticImageData | string;
@@ -32,6 +34,22 @@ export const tokenList: { [key: string]: TokenInfo } = {
     order: 2,
     address: '',
     decimals: 18,
+  },
+  BRL: {
+    icon: BRLIcon,
+    name: 'BRL',
+    symbol: 'BRL',
+    order: 2,
+    address: '',
+    decimals: 18,
+  },
+  WAL: {
+    icon: WALIcon,
+    name: 'WAL',
+    symbol: 'WAL',
+    order: 7,
+    address: '',
+    decimals: 9,
   },
   USDC: {
     icon: USDCIcon,

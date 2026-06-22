@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import Image, { StaticImageData } from 'next/image';
+import { StaticImageData } from 'next/image';
 import type { ComponentType } from 'react';
 import { useEffect, useState } from 'react';
 import {
@@ -13,8 +13,10 @@ import {
   NetworkMantle,
   NetworkMantleSepolia,
   NetworkPolygon,
+  NetworkSui,
 } from '@web3icons/react';
 import apiService, { OracleFeed } from '@/lib/api';
+import { TokenIcon, hasWeb3TokenIcon, hasFiatFlag } from '@/lib/token-icons';
 import StartBuilding from '../start-building';
 import {
   buildDataFeedRowsFromFeeds,
@@ -69,6 +71,7 @@ const networkIconComponents: Record<string, Web3NetworkIcon> = {
   '5003': NetworkMantleSepolia,
   '8453': NetworkBase,
   '84532': NetworkBaseSepolia,
+  '1282977196': NetworkSui,
 };
 
 const DataFeeds = () => {
@@ -139,18 +142,18 @@ const DataFeeds = () => {
       return aIndex - bIndex;
     });
 
-  const renderFeedIcon = (symbol: string, icon?: string | StaticImageData) => {
-    if (typeof icon === 'string' && icon.startsWith('http')) {
-      return <img src={icon} alt={symbol} width={20} height={20} />;
+  const renderFeedIcon = (
+    feedSymbol: string,
+    icon?: string | StaticImageData,
+  ) => {
+    // feedSymbol is the pair e.g. "BRL/USD" or "ETH / BTC"; use the base token.
+    const base = feedSymbol.split('/')[0]?.trim() || feedSymbol;
+
+    if (hasWeb3TokenIcon(base) || hasFiatFlag(base) || icon) {
+      return <TokenIcon symbol={base} icon={icon} size={20} />;
     }
 
-    if (icon) {
-      return <Image src={icon} alt={symbol} width={20} height={20} />;
-    }
-
-    return (
-      <span className="feed-fallback-icon">{getFeedBadgeLabel(symbol)}</span>
-    );
+    return <span className="feed-fallback-icon">{getFeedBadgeLabel(base)}</span>;
   };
 
   const renderFilterIcon = (label: string) => (
@@ -310,7 +313,7 @@ const DataFeeds = () => {
                       <div className="feed-cell feed-cell-primary">
                         <span className="feed-cell-label">Feed</span>
                         <div className="feed-identity">
-                          {renderFeedIcon(row.baseSymbol, row.icon)}
+                          {renderFeedIcon(row.symbol, row.icon)}
                           <strong>{row.symbol}</strong>
                           {row.svrEnabled && (
                             <span className="svr-pill">SVR</span>
