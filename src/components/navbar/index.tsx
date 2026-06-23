@@ -122,7 +122,7 @@ const Navbar: React.FC = () => {
               <MenuIcon />
             </li>
             <li>
-              <Link href="/swap">Swap</Link>
+              <Link href="/swap">Swap/Sweep</Link>
             </li>
           </ul>
 

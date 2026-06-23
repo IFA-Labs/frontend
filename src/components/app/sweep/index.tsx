@@ -12,19 +12,22 @@ import { useToast } from '@/hooks/useToast';
 import apiService from '@/lib/api';
 import { getTokenIcon, TokenInfo } from '@/lib/tokens';
 import {
-  createSweepTransaction,
   formatTokenUnits,
   getSwapAssetByCoinType,
-  getSweepTargetAsset,
-  hasSweepLegConfig,
+  isStaleOracleError,
   normalizeSwapDeploymentConfig,
   parseIfaSwapError,
-  quoteSweep,
   SUI_SWAP_DEPLOYMENT,
   type SuiSwapDeployment,
   type SuiSwapQuote,
-  type SweepLeg,
 } from '@/lib/sui-swap';
+import {
+  createSweepTransaction,
+  getSweepTargetAsset,
+  hasSweepLegConfig,
+  quoteSweep,
+  type SweepLeg,
+} from '@/lib/sui-sweep';
 
 type SweepExclusionReason =
   | 'Unsupported by IFÁ SWAP'
@@ -35,6 +38,7 @@ type SweepExclusionReason =
   | 'Above dust threshold'
   | 'Value below estimated gas cost'
   | 'Amount too small after quote'
+  | 'Quote unavailable'
   | 'Fetching quote'
   | 'Deployment config missing';
 
@@ -269,11 +273,11 @@ const Sweep = () => {
               return [coin.coinType, { status: 'ok', quote }];
             } catch (error) {
               const message = parseIfaSwapError(error);
-              const reason: SweepExclusionReason = /stale/i.test(message)
+              const reason: SweepExclusionReason = isStaleOracleError(message)
                 ? 'Stale oracle price'
                 : /missing|pair/i.test(message)
                   ? 'No oracle pair'
-                  : 'Amount too small after quote';
+                  : 'Quote unavailable';
               return [coin.coinType, { status: 'error', reason }];
             }
           },
@@ -493,7 +497,6 @@ const Sweep = () => {
         deployment,
       });
 
-      // Dry-run the whole PTB first — many legs revert if any one fails.
       const preflight = await suiClient.devInspectTransactionBlock({
         sender: suiAccount.address,
         transactionBlock: tx,

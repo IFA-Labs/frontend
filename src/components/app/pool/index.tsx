@@ -13,25 +13,27 @@ import { useToast } from '@/hooks/useToast';
 import apiService from '@/lib/api';
 import { getTokenIcon } from '@/lib/tokens';
 import {
-  createDepositTransaction,
-  createWithdrawTransaction,
   formatTokenUnits,
-  getHlpCoinType,
   getSwapAssetBySymbol,
   hasBaseSwapDeploymentConfig,
   isConfiguredObjectId,
-  LP_DECIMALS,
   normalizeSwapDeploymentConfig,
   parseDecimalAmount,
   parseIfaSwapError,
-  previewDeposit,
-  previewWithdraw,
-  getPoolSummary,
   SUI_SWAP_DEPLOYMENT,
-  USD_VALUE_DECIMALS,
-  type PoolSummary,
   type SuiSwapDeployment,
 } from '@/lib/sui-swap';
+import {
+  createDepositTransaction,
+  createWithdrawTransaction,
+  getHlpCoinType,
+  getPoolSummary,
+  LP_DECIMALS,
+  previewDeposit,
+  previewWithdraw,
+  USD_VALUE_DECIMALS,
+  type PoolSummary,
+} from '@/lib/sui-pool';
 
 type PoolMode = 'add' | 'withdraw';
 
@@ -142,7 +144,6 @@ const applySlippage = (amount: bigint) =>
 const usdFromValue = (value: bigint) =>
   Number(formatTokenUnits(value, USD_VALUE_DECIMALS));
 
-// Full TVL value, e.g. $6,127,912.21 (the font auto-fits the card width).
 const formatExactUsd = (value: bigint) =>
   `$${usdFromValue(value).toLocaleString(undefined, {
     minimumFractionDigits: 2,
@@ -299,7 +300,7 @@ const Pool = () => {
   const amountInBaseUnits = useMemo(() => {
     if (!amount || !selectedAsset) return BigInt(0);
     try {
-          const decimals = mode === 'add' ? selectedAsset.decimals : LP_DECIMALS;
+      const decimals = mode === 'add' ? selectedAsset.decimals : LP_DECIMALS;
       return parseDecimalAmount(amount, decimals);
     } catch {
       return BigInt(0);

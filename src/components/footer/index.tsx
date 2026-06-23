@@ -32,7 +32,7 @@ const Footer = () => {
               </a>
             </li>
             <li>
-              <a href="/swap">Swap</a>
+              <a href="/swap">Swap/Sweep</a>
             </li>
             <li>
               <a href="/blog">Blog</a>

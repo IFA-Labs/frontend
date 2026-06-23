@@ -28,6 +28,7 @@ import {
   formatTokenUnits,
   getSwapAssetBySymbol,
   hasSwapPairConfig,
+  isStaleOracleError,
   normalizeSwapDeploymentConfig,
   parseIfaSwapError,
   parseDecimalAmount,
@@ -339,28 +340,34 @@ const Swap = () => {
     setIsSuiQuoteLoading(true);
     setSuiQuoteError('');
 
-    quoteExactInput({
-      client: suiClient,
-      sender: suiAccount.address,
-      fromAsset: suiFromAsset,
-      toAsset: suiToAsset,
-      amountIn: amountInBaseUnits,
-      deployment: swapDeployment,
-    })
-      .then((quote) => {
-        if (active) setSuiSwapQuote(quote);
+    // Debounce so we don't fire a devInspect on every keystroke; rapid-fire
+    // calls can get rate-limited by the RPC and surface as a false
+    // "Quote unavailable".
+    const timer = setTimeout(() => {
+      quoteExactInput({
+        client: suiClient,
+        sender: suiAccount.address,
+        fromAsset: suiFromAsset,
+        toAsset: suiToAsset,
+        amountIn: amountInBaseUnits,
+        deployment: swapDeployment,
       })
-      .catch((error) => {
-        if (!active) return;
-        setSuiSwapQuote(null);
-        setSuiQuoteError(parseIfaSwapError(error));
-      })
-      .finally(() => {
-        if (active) setIsSuiQuoteLoading(false);
-      });
+        .then((quote) => {
+          if (active) setSuiSwapQuote(quote);
+        })
+        .catch((error) => {
+          if (!active) return;
+          setSuiSwapQuote(null);
+          setSuiQuoteError(parseIfaSwapError(error));
+        })
+        .finally(() => {
+          if (active) setIsSuiQuoteLoading(false);
+        });
+    }, 400);
 
     return () => {
       active = false;
+      clearTimeout(timer);
     };
   }, [
     amountInBaseUnits,
@@ -458,6 +465,8 @@ const Swap = () => {
     tokenPrices,
   ]);
 
+  const isOracleStale = isStaleOracleError(suiQuoteError);
+
   const isCheckingSwapDetails =
     isSuiConnected &&
     Boolean(fromToken) &&
@@ -483,7 +492,7 @@ const Swap = () => {
     if (suiFromBalance === null) return { canProceed: false, message: 'Could not fetch balance' };
     if (amountInBaseUnits <= BigInt(0)) return { canProceed: false, message: 'Enter a valid amount' };
     if (amountInBaseUnits > suiFromBalance) return { canProceed: false, message: 'Insufficient balance' };
-    if (suiQuoteError) return { canProceed: false, message: 'Quote unavailable' };
+    if (suiQuoteError) return { canProceed: false, message: suiQuoteError };
     if (!suiSwapQuote || suiSwapQuote.amountOut <= BigInt(0))
       return { canProceed: false, message: 'Quote unavailable' };
 
@@ -650,8 +659,6 @@ const Swap = () => {
         options: { showEffects: true, showBalanceChanges: true },
       });
 
-      // waitForTransaction confirms the swap actually settled on-chain before
-      // reporting success — executeTransactionBlock can return before finality.
       await suiClient.waitForTransaction({ digest: result.digest });
       if (result.effects?.status?.status !== 'success') {
         throw new Error(result.effects?.status?.error || 'Swap failed on-chain.');
@@ -730,6 +737,12 @@ const Swap = () => {
         <div className="swap-container">
           {activeMode === 'swap' ? (
             <>
+              {isOracleStale && (
+                <div className="swap-oracle-banner" role="alert">
+                  Oracle prices are stale right now, so swaps are paused. Quotes
+                  will resume automatically once the feed refreshes.
+                </div>
+              )}
               <div className="swap-input-container">
                 <div className="swap-input">
                   <div className="swap-form">

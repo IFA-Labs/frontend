@@ -378,34 +378,27 @@ class ApiService {
     toISO: string,
     assetId?: string,
   ): Promise<AuditPricePoint[]> {
-    try {
-      const url = `${API_BASE_URL}/prices/audit?from=${encodeURIComponent(
-        fromISO,
-      )}&to=${encodeURIComponent(toISO)}${
-        assetId ? `&asset=${encodeURIComponent(assetId)}` : ''
-      }`;
-      const response = await axios.get(url);
-      const raw = response.data;
+    const url = `${API_BASE_URL}/prices/audit?from=${encodeURIComponent(
+      fromISO,
+    )}&to=${encodeURIComponent(toISO)}${
+      assetId ? `&asset=${encodeURIComponent(assetId)}` : ''
+    }`;
+    const response = await axios.get(url);
+    const raw = response.data;
 
-      // Log the raw shape once so we can inspect it
-      console.log('[getAuditPrices] raw response:', JSON.stringify(raw)?.slice(0, 400));
+    console.log('[getAuditPrices] raw response:', JSON.stringify(raw)?.slice(0, 400));
 
-      // Handle both array-direct and wrapped `{ data: [...] }` shapes
-      const list: unknown[] = Array.isArray(raw)
-        ? raw
-        : Array.isArray(raw?.data)
-        ? raw.data
-        : [];
+    const list: unknown[] = Array.isArray(raw)
+      ? raw
+      : Array.isArray(raw?.data)
+      ? raw.data
+      : [];
 
-      return list.map((item: any) => ({
-        timestamp: item.timestamp ?? item.time ?? item.created_at ?? '',
-        value: item.value ?? item.price ?? 0,
-        expo: item.expo ?? 0,
-      }));
-    } catch (err) {
-      console.error('[getAuditPrices] error:', err);
-      return [];
-    }
+    return list.map((item: any) => ({
+      timestamp: item.timestamp ?? item.time ?? item.created_at ?? '',
+      value: item.value ?? item.price ?? 0,
+      expo: item.expo ?? 0,
+    }));
   }
 
   private getTokenIcon(token: string): string | StaticImageData {

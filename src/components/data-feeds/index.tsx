@@ -35,11 +35,18 @@ const networkIconLabels: Record<string, string> = {
 };
 
 const categoryIconLabels: Record<string, string> = {
-  Crypto: 'B',
-  Fiat: '$',
+  Crypto: '₿',
+  Fiat: '💱',
   Stablecoin: '$',
-  'Newly launched': 'NEW',
-  'SVR-enabled': 'SVR',
+  'Newly launched': '✨',
+  'SVR-enabled': '🔐',
+  Ngn: '🇳🇬',
+  Brl: '🇧🇷',
+  Eur: '🇪🇺',
+  Gbp: '🇬🇧',
+  Ghs: '🇬🇭',
+  Kes: '🇰🇪',
+  Zar: '🇿🇦',
 };
 
 const pageFeedOrder = [

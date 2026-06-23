@@ -133,6 +133,17 @@
       position: relative;
       margin-top: 0px;
 
+      .swap-oracle-banner {
+        background: rgba(255, 196, 0, 0.12);
+        border: 1px solid rgba(255, 196, 0, 0.4);
+        color: #ffcf66;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-size: 13px;
+        line-height: 1.4;
+        margin-bottom: 1rem;
+      }
+
       .swap-input-container {
         display: flex;
         flex-direction: column;

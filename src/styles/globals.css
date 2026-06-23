@@ -76,16 +76,33 @@ button:hover {
   font-family: var(--font-inter);
 }
 
-[data-testid*="reown-branding"],
-[class*="reown-branding"],
-[class*="walletconnect-branding"],
+[data-testid*='reown-branding'],
+[class*='reown-branding'],
+[class*='walletconnect-branding'],
 .w3m-footer,
 .w3m-brand {
   display: none !important;
 }
 
-div[class*="powered-by"],
-div[class*="branding"],
-footer[class*="reown"] {
+div[class*='powered-by'],
+div[class*='branding'],
+footer[class*='reown'] {
   display: none !important;
+}
+
+[data-dapp-kit].AccountDropdownMenu_connectedAccount__div2ql0,
+[data-dapp-kit] .AccountDropdownMenu_connectedAccount__div2ql0 {
+  gap: 8px;
+}
+[data-dapp-kit].Button_buttonVariants_size_lg__x1s81q4,
+[data-dapp-kit] .Button_buttonVariants_size_lg__x1s81q4 {
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+[data-dapp-kit].Button_buttonVariants_variant_primary__x1s81q1,
+[data-dapp-kit] .Button_buttonVariants_variant_primary__x1s81q1 {
+  background-color: none !important;
+  background: none !important;
+  color: none !important;
+  box-shadow: none !important;
 }

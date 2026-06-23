@@ -53,8 +53,8 @@ export const HOME_FEED_PRIORITY = [
   'BRZ',
   'ZARP',
   'USDC',
-  'ETH',
-  'USDT',
+  'SUI',
+  'USDSUI',
 ] as const;
 export const HOME_FEED_LIMIT = 6;
 
@@ -219,6 +219,36 @@ const FEED_DEFINITIONS: Record<string, FeedDefinition> = {
     oracleRoute: 'ETH/USD reference price',
     precision: '8 decimals',
     icon: '/images/icons/eth.svg',
+  },
+  SUI: {
+    baseSymbol: 'SUI',
+    symbol: 'SUI/USD',
+    network: 'Sui Mainnet',
+    assetClass: 'Crypto',
+    category: 'Crypto',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 0.704,
+    feedId: 'SUI-USD-Sui-001',
+    oracleRoute: 'SUI/USD reference price',
+    precision: '8 decimals',
+    icon: '/images/tokens/sui.svg',
+  },
+  USDSUI: {
+    baseSymbol: 'USDSUI',
+    symbol: 'USDSui/USD',
+    network: 'Sui Mainnet',
+    assetClass: 'Stablecoin',
+    category: 'Stablecoin',
+    deviationThreshold: '0.5%',
+    heartbeat: '00:17:22',
+    answerPrefix: '$',
+    seedPrice: 0.998,
+    feedId: 'USDSUI-USD-Sui-001',
+    oracleRoute: 'USDSui/USD reference price',
+    precision: '8 decimals',
+    icon: '/images/tokens/USDsui.png',
   },
 };
 

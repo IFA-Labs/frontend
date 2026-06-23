@@ -38,7 +38,7 @@ const Navbar = () => {
               <Link href="/">Home</Link>
             </li>
             <li>
-              <Link href="/swap">Swap</Link>
+              <Link href="/swap">Swap/Sweep</Link>
             </li>
             <li>
               <Link href="/pools">Pool</Link>
