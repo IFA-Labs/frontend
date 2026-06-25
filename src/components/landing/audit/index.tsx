@@ -165,7 +165,7 @@ const Audit = () => {
       try {
         const fromISO = `${startDate}T00:00:00Z`;
         const toISO = `${endDate}T00:00:00Z`;
-        const data = await ApiService.getAuditPrices(
+        const data = await ApiService.getAuditReport(
           fromISO,
           toISO,
           selectedAssetId || undefined,

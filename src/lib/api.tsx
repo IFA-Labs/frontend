@@ -64,23 +64,33 @@ export interface OracleFeedsResponse {
   data: OracleFeed[];
 }
 
+export interface AuditRawPrice {
+  source: string;
+  value: number;
+  expo: number;
+  timestamp: string;
+  reqUrl?: string;
+}
+
 export interface AuditPricePoint {
   timestamp: string;
   value: number;
   expo: number;
+  source?: string;
+  rawPrices: AuditRawPrice[];
 }
 
 export interface FaucetNetwork {
-  id: string;        // chain_id
-  label: string;     // network name
-  logoUrl?: string;  // chain_logo_url from API
+  id: string; // chain_id
+  label: string; // network name
+  logoUrl?: string; // chain_logo_url from API
 }
 
 export interface FaucetAsset {
-  id: string;                          // asset_id
-  symbol: string;                      // e.g. "cNGN"
-  pair: string;                        // e.g. "cNGN/USD"
-  icon?: StaticImageData | string;     // local SVG > API URL > undefined
+  id: string; // asset_id
+  symbol: string; // e.g. "cNGN"
+  pair: string; // e.g. "cNGN/USD"
+  icon?: StaticImageData | string; // local SVG > API URL > undefined
 }
 
 export interface FeedRequestPayload {
@@ -183,7 +193,9 @@ class ApiService {
     }
   }
 
-  async getSwapDeployment(network = 'testnet'): Promise<SwapDeploymentResponse> {
+  async getSwapDeployment(
+    network = 'testnet',
+  ): Promise<SwapDeploymentResponse> {
     const response = await axios.get<SwapDeploymentResponse>(
       `/api/swap/deployment?network=${encodeURIComponent(network)}`,
     );
@@ -373,6 +385,24 @@ class ApiService {
     return response.data;
   }
 
+  // Returns the complete, untouched audit response from the backend. Used for
+  // the downloadable audit report so the file is a faithful copy of the BE
+  // payload (every record, source, hash, and pagination field) rather than the
+  // reshaped subset `getAuditPrices` produces for charts.
+  async getAuditReport(
+    fromISO: string,
+    toISO: string,
+    assetId?: string,
+  ): Promise<unknown> {
+    const url = `${API_BASE_URL}/prices/audit?from=${encodeURIComponent(
+      fromISO,
+    )}&to=${encodeURIComponent(toISO)}${
+      assetId ? `&asset=${encodeURIComponent(assetId)}` : ''
+    }`;
+    const response = await axios.get(url);
+    return response.data;
+  }
+
   async getAuditPrices(
     fromISO: string,
     toISO: string,
@@ -386,19 +416,37 @@ class ApiService {
     const response = await axios.get(url);
     const raw = response.data;
 
-    console.log('[getAuditPrices] raw response:', JSON.stringify(raw)?.slice(0, 400));
-
+    // The audit endpoint returns { asset, audit_records: [...], from, to, ... }
+    // where each record nests the price under `aggregated_price`. Fall back to
+    // the older array / `data` shapes so this stays robust.
     const list: unknown[] = Array.isArray(raw)
       ? raw
-      : Array.isArray(raw?.data)
-      ? raw.data
-      : [];
+      : Array.isArray(raw?.audit_records)
+        ? raw.audit_records
+        : Array.isArray(raw?.data)
+          ? raw.data
+          : [];
 
-    return list.map((item: any) => ({
-      timestamp: item.timestamp ?? item.time ?? item.created_at ?? '',
-      value: item.value ?? item.price ?? 0,
-      expo: item.expo ?? 0,
-    }));
+    return list.map((item: any) => {
+      const price = item?.aggregated_price ?? item;
+      const rawPrices: AuditRawPrice[] = Array.isArray(item?.raw_prices)
+        ? item.raw_prices.map((source: any) => ({
+            source: source.source ?? '',
+            value: source.value ?? source.price ?? 0,
+            expo: source.expo ?? 0,
+            timestamp: source.timestamp ?? source.time ?? '',
+            reqUrl: source.req_url || undefined,
+          }))
+        : [];
+
+      return {
+        timestamp: price.timestamp ?? price.time ?? price.created_at ?? '',
+        value: price.value ?? price.price ?? 0,
+        expo: price.expo ?? 0,
+        source: price.source || undefined,
+        rawPrices,
+      };
+    });
   }
 
   private getTokenIcon(token: string): string | StaticImageData {
