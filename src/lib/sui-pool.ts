@@ -6,6 +6,7 @@ import {
   type SuiSwapAssetConfig,
   type SuiSwapDeployment,
   SUI_SWAP_DEPLOYMENT,
+  SUI_TX_GAS_BUDGET,
   selectInputCoin,
 } from './sui-swap';
 
@@ -207,6 +208,7 @@ export async function createDepositTransaction({
   });
 
   tx.setSenderIfNotSet(owner);
+  tx.setGasBudget(SUI_TX_GAS_BUDGET);
   return tx;
 }
 
@@ -248,5 +250,6 @@ export async function createWithdrawTransaction({
   });
 
   tx.setSenderIfNotSet(owner);
+  tx.setGasBudget(SUI_TX_GAS_BUDGET);
   return tx;
 }

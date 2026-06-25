@@ -664,7 +664,7 @@
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      background: #1f1f1f;
+      // background: #1f1f1f;
       transform: scale(0.99);
     }
   }

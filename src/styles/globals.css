@@ -101,8 +101,8 @@ footer[class*='reown'] {
 }
 [data-dapp-kit].Button_buttonVariants_variant_primary__x1s81q1,
 [data-dapp-kit] .Button_buttonVariants_variant_primary__x1s81q1 {
-  background-color: none !important;
+  /* background-color: none !important;
   background: none !important;
   color: none !important;
-  box-shadow: none !important;
+  box-shadow: none !important; */
 }

@@ -6,6 +6,7 @@ import {
   type SuiSwapDeployment,
   type SuiSwapQuote,
   SUI_SWAP_DEPLOYMENT,
+  SUI_TX_GAS_BUDGET,
   hasBaseSwapDeploymentConfig,
   isConfiguredObjectId,
   getSwapAssetBySymbol,
@@ -131,5 +132,7 @@ export async function createSweepTransaction({
   }
 
   tx.setSenderIfNotSet(owner);
+  // One swap per leg, so scale the bounded budget by the number of legs.
+  tx.setGasBudget(SUI_TX_GAS_BUDGET * BigInt(Math.max(legs.length, 1)));
   return tx;
 }

@@ -118,6 +118,29 @@ export function normalizeSwapDeploymentConfig(
 export const isConfiguredObjectId = (value?: string) =>
   Boolean(value && value !== '0x...' && !value.includes('...'));
 
+// Several WAL coins exist on testnet (official Walrus, IFA, and other test
+// deployments). Only this one should ever surface in the faucet or sweep.
+export const ALLOWED_WAL_TOKEN_TYPE = normalizeSuiTokenType(
+  '0xd03e49d632631d6bab21c85a06b5f7f4512bedf616dea8eaffab8f1a718eb666::wal::WAL',
+);
+
+// True for any WAL deployment except the allowed one. Matching on the
+// `::wal::WAL` struct path (not a fixed blocklist) keeps this correct as new
+// WAL coins appear.
+export const isHiddenWalToken = (tokenType: string) => {
+  const normalized = normalizeSuiTokenType(tokenType);
+  return (
+    /::wal::WAL$/i.test(normalized) && normalized !== ALLOWED_WAL_TOKEN_TYPE
+  );
+};
+
+// Set an explicit gas budget on SUI transactions. Without it, wallets estimate
+// gas by simulating the tx — and when that simulation fails (e.g. Slush can't
+// validate a `localhost` origin) they fall back to the 50 SUI max budget and
+// then report "No valid gas coins found" because no coin covers it. A swap
+// costs ~0.005 SUI, so 0.025 SUI is a safe, bounded ceiling.
+export const SUI_TX_GAS_BUDGET = BigInt(25_000_000); // 0.025 SUI
+
 const IFA_SWAP_ABORT_MESSAGES: Record<number, string> = {
   2: 'Pool is paused',
   3: 'Asset is not supported',
@@ -150,6 +173,13 @@ export function parseIfaSwapError(error: unknown) {
 
   if (/user rejected|rejected request|reject/i.test(message)) {
     return 'Transaction signing was cancelled in your wallet.';
+  }
+
+  // The oracle package aborts in `get_pair_info` when an asset has no price
+  // feed published on-chain (e.g. CNGN). Its abort code isn't part of the swap
+  // package's code space, so classify it before the generic abort handling.
+  if (/get_pair_info/i.test(message)) {
+    return 'Oracle price or pair is missing';
   }
 
   const abortMatch = message.match(/MoveAbort.*,\s*(\d+)\)/);
@@ -390,5 +420,6 @@ export async function createSwapExactInputTransaction({
   });
 
   tx.setSenderIfNotSet(owner);
+  tx.setGasBudget(SUI_TX_GAS_BUDGET);
   return tx;
 }

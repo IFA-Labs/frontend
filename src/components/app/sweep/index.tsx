@@ -7,13 +7,13 @@ import {
   useCurrentWallet,
   useSuiClient,
 } from '@mysten/dapp-kit';
-import { Transaction } from '@mysten/sui/transactions';
 import { useToast } from '@/hooks/useToast';
 import apiService from '@/lib/api';
 import { getTokenIcon, TokenInfo } from '@/lib/tokens';
 import {
   formatTokenUnits,
   getSwapAssetByCoinType,
+  isHiddenWalToken,
   isStaleOracleError,
   normalizeSwapDeploymentConfig,
   parseIfaSwapError,
@@ -140,6 +140,9 @@ const Sweep = () => {
     Record<string, SweepQuoteEntry>
   >({});
   const [isExecutingSweep, setIsExecutingSweep] = useState(false);
+  // Bumped after a confirmed sweep to re-scan wallet balances so swept tokens
+  // drop off the list.
+  const [sweepRefreshKey, setSweepRefreshKey] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -182,6 +185,8 @@ const Sweep = () => {
         const coins = await Promise.all(
           balances
             .filter((b) => BigInt(b.totalBalance) > BigInt(0))
+            // Only the allowed WAL should appear; hide the other WAL coins.
+            .filter((b) => !isHiddenWalToken(b.coinType))
             .map(async (balance) => {
               const asset = getSwapAssetByCoinType(
                 balance.coinType,
@@ -229,7 +234,7 @@ const Sweep = () => {
     return () => {
       active = false;
     };
-  }, [suiAccount?.address, suiClient, deployment]);
+  }, [suiAccount?.address, suiClient, deployment, sweepRefreshKey]);
 
   useEffect(() => {
     if (
@@ -507,9 +512,11 @@ const Sweep = () => {
         );
       }
 
-      const transactionBytes = await tx.build({ client: suiClient });
-      const resolvedTx = Transaction.from(transactionBytes);
-      const transactionJson = await resolvedTx.toJSON();
+      // Hand the wallet the UNBUILT transaction so it resolves gas with the
+      // full SUI coin set. Pre-building and passing resolved gas data made
+      // wallets (e.g. Slush) re-pick a single gas coin, so splitting a SUI
+      // leg off the gas coin could revert when it exceeded that one coin.
+      const transactionJson = await tx.toJSON();
       const chainId = suiAccount.chains?.[0] || 'sui:testnet';
 
       const { bytes, signature } = await signTransactionFeature.signTransaction({
@@ -524,6 +531,10 @@ const Sweep = () => {
         options: { showEffects: true, showBalanceChanges: true },
       });
 
+      // Wait for the fullnode to index the tx so the re-scan reflects the new
+      // balances, then refresh so swept tokens drop off the list.
+      await suiClient.waitForTransaction({ digest: result.digest });
+
       showToast({
         type: 'success',
         title: 'Sweep Submitted',
@@ -531,6 +542,7 @@ const Sweep = () => {
         duration: 7000,
       });
       setSelectedSweepCoinTypes([]);
+      setSweepRefreshKey((key) => key + 1);
     } catch (error) {
       showToast({
         type: isUserRejection(error) ? 'info' : 'error',

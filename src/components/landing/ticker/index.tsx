@@ -16,12 +16,16 @@ export default function CryptoTicker() {
 
   useEffect(() => {
     if (prices.length > 0) {
-      const updatedData = prices.map((item) => ({
-        symbol: item.symbol,
-        price: item.price,
-        change7d: item.change_7d || 0,
-        change7dPct: item.change_7d_pct || 0,
-      }));
+      const updatedData = prices
+        // Drop assets the backend has no price for; otherwise they render as
+        // a misleading "$0.00000" in the ticker.
+        .filter((item) => item.price > 0)
+        .map((item) => ({
+          symbol: item.symbol,
+          price: item.price,
+          change7d: item.change_7d || 0,
+          change7dPct: item.change_7d_pct || 0,
+        }));
       setTickerData(updatedData);
     }
   }, [prices]);
@@ -35,6 +39,16 @@ export default function CryptoTicker() {
 
   const formatPercentage = (pct: number): string => {
     return `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
+  };
+
+  // Adapt precision to magnitude so large prices don't read as "$1,588.138824"
+  // and sub-cent prices keep enough significant digits.
+  const formatPrice = (price: number): string => {
+    const fractionDigits = price >= 1 ? 2 : price >= 0.01 ? 4 : 6;
+    return price.toLocaleString(undefined, {
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    });
   };
 
   return (
@@ -54,13 +68,7 @@ export default function CryptoTicker() {
                 </span>
 
                 <span className="price-wrapper">
-                  <p className="price">
-                    $
-                    {item.price.toLocaleString(undefined, {
-                      minimumFractionDigits: 5,
-                      maximumFractionDigits: 6,
-                    })}
-                  </p>
+                  <p className="price">${formatPrice(item.price)}</p>
                   <p
                     className={`change ${
                       isPositive7d ? 'positive' : 'negative'

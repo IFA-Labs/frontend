@@ -7,7 +7,6 @@ import {
   useCurrentWallet,
   useSuiClient,
 } from '@mysten/dapp-kit';
-import { Transaction } from '@mysten/sui/transactions';
 import { InfoIcon, SuiIcon } from '../../svg';
 import { useToast } from '@/hooks/useToast';
 import apiService from '@/lib/api';
@@ -138,6 +137,10 @@ const PoolAssetDropdown = ({
 const SLIPPAGE_TOLERANCE = 0.5;
 const SLIPPAGE_BPS = BigInt(Math.round(SLIPPAGE_TOLERANCE * 100));
 
+// SUI also pays gas, so depositing the entire SUI balance leaves nothing for
+// the gas budget and the tx reverts with `InsufficientCoinBalance`.
+const SUI_GAS_RESERVE = BigInt(50_000_000); // 0.05 SUI
+
 const applySlippage = (amount: bigint) =>
   (amount * (BigInt(10000) - SLIPPAGE_BPS)) / BigInt(10000);
 
@@ -172,6 +175,7 @@ const Pool = () => {
   const [deployment, setDeployment] =
     useState<SuiSwapDeployment>(SUI_SWAP_DEPLOYMENT);
   const [deploymentError, setDeploymentError] = useState('');
+  const [isDeploymentLoading, setIsDeploymentLoading] = useState(true);
 
   const [mode, setMode] = useState<PoolMode>('add');
   const [assetSymbol, setAssetSymbol] = useState('');
@@ -207,6 +211,7 @@ const Pool = () => {
 
   useEffect(() => {
     let active = true;
+    setIsDeploymentLoading(true);
     apiService
       .getSwapDeployment('testnet')
       .then((config) => {
@@ -221,6 +226,9 @@ const Pool = () => {
             ? error.message
             : 'Unable to load pool deployment.',
         );
+      })
+      .finally(() => {
+        if (active) setIsDeploymentLoading(false);
       });
     return () => {
       active = false;
@@ -375,7 +383,14 @@ const Pool = () => {
 
   const handleMax = () => {
     if (mode === 'add' && selectedAsset) {
-      setAmount(formatTokenUnits(assetBalance, selectedAsset.decimals));
+      const isSui = selectedAsset.symbol.toUpperCase() === 'SUI';
+      const maxDepositable =
+        isSui && assetBalance > SUI_GAS_RESERVE
+          ? assetBalance - SUI_GAS_RESERVE
+          : isSui
+            ? BigInt(0)
+            : assetBalance;
+      setAmount(formatTokenUnits(maxDepositable, selectedAsset.decimals));
     } else if (mode === 'withdraw') {
       setAmount(formatTokenUnits(hlpBalance, LP_DECIMALS));
     }
@@ -434,6 +449,12 @@ const Pool = () => {
       return { ok: false, label: 'Enter an amount' };
     if (mode === 'add' && amountInBaseUnits > assetBalance)
       return { ok: false, label: 'Insufficient balance' };
+    if (
+      mode === 'add' &&
+      selectedAsset.symbol.toUpperCase() === 'SUI' &&
+      amountInBaseUnits > assetBalance - SUI_GAS_RESERVE
+    )
+      return { ok: false, label: 'Reserve some SUI for gas' };
     if (mode === 'withdraw' && amountInBaseUnits > hlpBalance)
       return { ok: false, label: 'Insufficient HLP' };
     if (isPreviewing) return { ok: false, label: 'Checking…' };
@@ -508,9 +529,12 @@ const Pool = () => {
         );
       }
 
-      const transactionBytes = await tx.build({ client: suiClient });
-      const resolvedTx = Transaction.from(transactionBytes);
-      const transactionJson = await resolvedTx.toJSON();
+      // Hand the wallet the UNBUILT transaction so it resolves gas with the
+      // full SUI coin set. Pre-building and passing resolved gas data made
+      // wallets (e.g. Slush) re-pick a single gas coin, so splitting the
+      // deposit amount off the gas coin reverted once it exceeded that one
+      // coin (~half the balance).
+      const transactionJson = await tx.toJSON();
       const chain = suiAccount.chains?.[0] || 'sui:testnet';
 
       const { bytes, signature } = await signTransactionFeature.signTransaction({
@@ -615,7 +639,7 @@ const Pool = () => {
             </button>
           </div>
 
-          {!baseConfigReady && (
+          {!isDeploymentLoading && !baseConfigReady && (
             <div className="pool-config-banner">
               {deploymentError ||
                 'Pool deployment is missing the oracle price-feed ID. Deposits and withdrawals are disabled until it is configured.'}

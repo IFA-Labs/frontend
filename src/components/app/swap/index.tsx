@@ -9,7 +9,6 @@ import {
   useCurrentWallet,
   useSuiClient,
 } from '@mysten/dapp-kit';
-import { Transaction } from '@mysten/sui/transactions';
 import { parseUnits } from 'viem';
 import useExchangeRate from '@/hooks/useExchangeRates';
 import apiService from '@/lib/api';
@@ -40,6 +39,11 @@ import {
 import Sweep from '@/components/app/sweep';
 
 const NATIVE_TOKEN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+
+// SUI is also the gas coin, so the swap amount is split off the gas object.
+// Swapping the whole balance leaves nothing to pay gas and the tx reverts with
+// `InsufficientCoinBalance`. Keep a buffer back when SUI is the input token.
+const SUI_GAS_RESERVE = BigInt(50_000_000); // 0.05 SUI
 
 const normalizeNativeAddress = (token: TokenInfo): TokenInfo => {
   if (token.symbol === 'ETH' && (!token.address || token.address === '')) {
@@ -492,6 +496,12 @@ const Swap = () => {
     if (suiFromBalance === null) return { canProceed: false, message: 'Could not fetch balance' };
     if (amountInBaseUnits <= BigInt(0)) return { canProceed: false, message: 'Enter a valid amount' };
     if (amountInBaseUnits > suiFromBalance) return { canProceed: false, message: 'Insufficient balance' };
+    const isFromSui = suiFromAsset.symbol.toUpperCase() === 'SUI';
+    if (
+      isFromSui &&
+      amountInBaseUnits > suiFromBalance - SUI_GAS_RESERVE
+    )
+      return { canProceed: false, message: 'Reserve some SUI for gas' };
     if (suiQuoteError) return { canProceed: false, message: suiQuoteError };
     if (!suiSwapQuote || suiSwapQuote.amountOut <= BigInt(0))
       return { canProceed: false, message: 'Quote unavailable' };
@@ -640,9 +650,12 @@ const Swap = () => {
         throw new Error(preflight.effects.status.error || 'Swap preflight failed.');
       }
 
-      const transactionBytes = await tx.build({ client: suiClient });
-      const resolvedTx = Transaction.from(transactionBytes);
-      const transactionJson = await resolvedTx.toJSON();
+      // Hand the wallet the UNBUILT transaction so it resolves gas with the
+      // full SUI coin set. Pre-building and passing resolved gas data made
+      // wallets (e.g. Slush) re-pick a single gas coin, so splitting the swap
+      // amount off the gas coin reverted once it exceeded that one coin
+      // (~half the balance).
+      const transactionJson = await tx.toJSON();
       const chainId = suiAccount.chains?.[0] || 'sui:testnet';
 
       const { bytes, signature } = await signTransactionFeature.signTransaction({

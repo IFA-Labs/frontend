@@ -28,6 +28,7 @@ import {
   parseFaucetError,
   preflightClaimTransaction,
 } from '@/lib/sui-faucet';
+import { isHiddenWalToken } from '@/lib/sui-swap';
 
 const DEFAULT_NETWORK = 'testnet';
 
@@ -337,6 +338,9 @@ const Faucet = () => {
     Record<string, FaucetTokenState>
   >({});
   const [verified, setVerified] = useState(false);
+  // Bumping this remounts <SlideVerify/>, which owns its own drag state, so the
+  // slider visually resets in lockstep with `verified`.
+  const [verifyResetKey, setVerifyResetKey] = useState(0);
   const [tokenState, setTokenState] = useState<FaucetTokenState | null>(null);
   const [remainingCooldownMs, setRemainingCooldownMs] = useState<bigint>(
     BigInt(0),
@@ -376,9 +380,9 @@ const Faucet = () => {
       .then((config) => {
         if (!active) return;
         setDeployment(config);
-        const configuredTokenTypes = config.tokens.map((token) =>
-          normalizeSuiTokenType(token.tokenType),
-        );
+        const configuredTokenTypes = config.tokens
+          .map((token) => normalizeSuiTokenType(token.tokenType))
+          .filter((tokenType) => !isHiddenWalToken(tokenType));
         setSupportedTokenTypes(configuredTokenTypes);
         setSelectedTokenType(configuredTokenTypes[0] || '');
       })
@@ -417,7 +421,7 @@ const Faucet = () => {
             ),
             ...registryTokenTypes,
           ]),
-        );
+        ).filter((tokenType) => !isHiddenWalToken(tokenType));
         setSupportedTokenTypes(mergedTokenTypes);
         setSelectedTokenType((current) => current || mergedTokenTypes[0] || '');
 
@@ -453,6 +457,17 @@ const Faucet = () => {
       active = false;
     };
   }, [account?.address, deployment, suiClient]);
+
+  const resetVerification = () => {
+    setVerified(false);
+    setVerifyResetKey((key) => key + 1);
+  };
+
+  // Require a fresh bot-check whenever the user switches to another token.
+  useEffect(() => {
+    setVerified(false);
+    setVerifyResetKey((key) => key + 1);
+  }, [selectedTokenType]);
 
   const selectedToken = useMemo<FaucetTokenConfig | undefined>(
     () =>
@@ -654,7 +669,7 @@ const Faucet = () => {
         signature,
         options: { showEffects: true },
       });
-      setVerified(false);
+      resetVerification();
       await refreshFaucetState();
     } catch (error) {
       setClaimError(parseFaucetError(error));
@@ -726,7 +741,10 @@ const Faucet = () => {
                 <span className="section-label">VERIFY</span>
                 <span className="section-hint">bot-check</span>
               </div>
-              <SlideVerify onVerified={() => setVerified(true)} />
+              <SlideVerify
+                key={verifyResetKey}
+                onVerified={() => setVerified(true)}
+              />
             </div>
 
             {claimError && <div className="faucet-error">{claimError}</div>}
