@@ -81,12 +81,18 @@
       "enabled": true
     },
     {
-      "tokenType": "0x03d89b35c658a0b0359b35fd83fc5c44949af781e376125d382eed9142aefe6d::wal::WAL",
+      "tokenType": "0xd03e49d632631d6bab21c85a06b5f7f4512bedf616dea8eaffab8f1a718eb666::wal::WAL",
       "symbol": "WAL",
       "name": "Walrus",
-      "assetVaultId": "0x387ebe05d6742129c47d926cbe9199e5562ae4efbd953ae340a4e249e30f51c2",
-      "protocolFeeVaultId": "0x49cff79c6697a446ad8b365eb211a6b51fdfd5149b75541f45ab06d90a175ef2",
+      "assetVaultId": "0x9e735eb4e204f0def7b74d6285c04befeac61542c9a7d6ec4bbfdca0ba6b73d3",
+      "protocolFeeVaultId": "0xe07bd7f44af03b59b01c260ca87f8808486cc4335aac9eeb5dd2a222aff9735b",
+      "assetIndex": "0x41c6a6914b079baae1345430838fc14718df2939217f840c27bc7f6d43e539d2",
+      "assetIndexBytes": "[65,198,166,145,75,7,155,170,225,52,84,48,131,143,193,71,24,223,41,57,33,127,132,12,39,188,127,109,67,229,57,210]",
       "coinDecimals": 9,
+      "targetWeightBps": 4000,
+      "maxTradeBps": 10000,
+      "maxWithdrawBps": 10000,
+      "minLiquidity": 0,
       "enabled": true
     }
   ]

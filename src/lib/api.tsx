@@ -130,6 +130,9 @@ export interface SwapDeploymentAsset {
 export interface SwapDeploymentResponse {
   network: string;
   packageId: string;
+  // Some backend deployment payloads put the oracle feed at the top level
+  // instead of nested under `oracle`. Support both.
+  priceFeedId?: string;
   adminCapId?: string;
   hlpTreasuryCapId?: string | null;
   hlpMetadataCapId?: string;

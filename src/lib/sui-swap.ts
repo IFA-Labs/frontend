@@ -108,7 +108,8 @@ export function normalizeSwapDeploymentConfig(
     network: deployment.network,
     packageId: deployment.packageId,
     poolId: deployment.pool.id,
-    priceFeedId: deployment.oracle?.priceFeedId || '0x...',
+    priceFeedId:
+      deployment.oracle?.priceFeedId || deployment.priceFeedId || '0x...',
     assets: assets.length > 0 ? assets : FALLBACK_SUI_SWAP_DEPLOYMENT.assets,
     sweepTargetTokenType: deployment.sweep?.targetTokenType,
     pool: deployment.pool,
